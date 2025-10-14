@@ -1,11 +1,16 @@
-import { createApp } from 'vue';
-import './style.css';
-import App from './App.vue';
+import { createApp } from "vue";
+import { createPinia } from "pinia";
 
-createApp(App).mount(
-  (() => {
-    const app = document.createElement('div');
-    document.body.append(app);
-    return app;
-  })(),
-);
+import logger from "./plugins/logger";
+import "./styles/style.css";
+import App from "./App.vue";
+
+const pinia = createPinia();
+const app = createApp(App);
+
+app.use(logger);
+app.use(pinia);
+
+const appElement = document.createElement("div");
+document.body.appendChild(appElement);
+app.mount(appElement);
