@@ -1,3 +1,5 @@
+export const GLOBAL_STORE_KEY = "globalStore";
+
 // 自定义快捷键，可以是任意长度的字母或数字
 export const FILTER_AV_HOT_KEY = { name: "filterAVHotKey", key: "@@" };
 // 脚本会改变页面的原有结构，此处定义可使页面恢复原状的快捷键

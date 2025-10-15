@@ -6,8 +6,8 @@
 		@menu-show="onMenuShow"
 		@menu-hide="onMenuHide"
 		@position-change="onPositionChange">
-		<n-icon>
-			<img :src="menuIcon" alt="菜单图标" />
+		<n-icon size="30">
+			<img :src="ICONS.menu" alt="菜单图标" />
 		</n-icon>
 
 		<template #menu>
@@ -24,7 +24,7 @@
 						:disabled="obj.disabled"
 						:loading="obj.loading"
 						@click="handleItemClick(obj)">
-						<n-icon>
+						<n-icon size="28px">
 							<img
 								:src="getIconSrc(obj)"
 								:alt="obj.tooltip || '菜单项图标'"
@@ -42,13 +42,7 @@
 import { NButton, NIcon, NTooltip } from "naive-ui";
 import { computed, defineEmits } from "vue";
 import FixedFloatMenu from "../components/FixedFloatMenu.vue";
-
-// 图标导入
-import menuIcon from "../assets/menu.svg";
-import settingsIcon from "../assets/settings.svg";
-import batchOpenIcon from "../assets/batchOpen.svg";
-import hideAVIcon from "../assets/hideAV.svg";
-import showAVIcon from "../assets/showAV.svg";
+import { ICONS } from "../comm/constant";
 
 // 状态管理
 const state = {
@@ -77,18 +71,18 @@ const menuItemsConfig = [
 		tooltip: "批量打开作品",
 		handler: batchOpenLink,
 		icon: {
-			default: batchOpenIcon,
+			default: ICONS.batchOpenLink,
 		},
 	},
 	{
 		id: "toggle-collection",
-		tooltip: computed(() =>
-			state.isCollectionHidden ? "显示合集作品" : "隐藏合集作品"
+		tooltip: computed(
+			() => (state.isCollectionHidden ? "显示" : "隐藏") + "合集作品"
 		),
 		handler: toggleCollection,
 		icon: {
-			default: showAVIcon,
-			active: hideAVIcon,
+			default: ICONS.showAVS,
+			active: ICONS.hideAVS,
 		},
 		stateKey: "isCollectionHidden",
 		// type: computed(() =>
@@ -100,10 +94,9 @@ const menuItemsConfig = [
 		tooltip: "设置",
 		handler: openSetting,
 		icon: {
-			default: settingsIcon,
+			default: ICONS.settings,
 			// 没有 active 图标，使用默认图标
 		},
-		stateKey: "isSettingsOpen",
 		// type: computed(() => (state.isSettingsOpen ? "primary" : "default")),
 	},
 ];
@@ -172,6 +165,11 @@ const onPositionChange = (position) => {
 .n-button:hover {
 	transform: scale(1.05);
 }
+
+/* img {
+	width: 28px;
+	height: 28px;
+} */
 
 /* .n-button[disabled] {
 	opacity: 0.6;
