@@ -10,11 +10,12 @@ class jellyfin {
 		this.headers = {
 			["X-Emby-Token"]: this.token,
 		};
-
 	}
 
 	fetchItems = async (extraFetchParams) => {
+		logger.log("begin");
 		const extraParams = parseUserPairsToParams(extraFetchParams);
+		logger.log(extraParams);
 		logger.debug("fetchItem-->", extraFetchParams, extraParams);
 		const params = {
 			sortBy: "DateCreated",

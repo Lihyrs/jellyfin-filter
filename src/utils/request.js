@@ -2,6 +2,7 @@
 import logger from "../lib/Logger";
 function request(url, { method = "GET", data, headers = {} } = {}) {
 	logger.debug(`请求: ${url}`);
+	logger.debug(`header:`, headers);
 	// if (new URL(url).origin === state.settings.serverUrl) {
 	// 	headers["X-Emby-Token"] = state.settings.apiKey;
 	// 	logger.debug("apikey-->", state.settings.apiKey);

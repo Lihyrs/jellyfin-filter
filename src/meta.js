@@ -1,5 +1,5 @@
 const meta = {
-	name: "Jellyfin filter",
+	name: "Jellyfin filter aaaa",
 	version: "v1.0.0",
 	namespace: "http://tampermonkey.net/",
 	description:
