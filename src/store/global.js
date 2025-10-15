@@ -1,6 +1,7 @@
 // stores/global.js
 import { defineStore } from "pinia";
 import defaultSettings from "../comm/defaultSettings.js";
+import logger from '../lib/Logger.js';
 
 export const useGlobalStore = defineStore("global", {
 	state: () => ({
@@ -33,7 +34,7 @@ export const useGlobalStore = defineStore("global", {
 		updateSetting(key, value) {
 			if (key in this.settings) {
 				this.settings[key] = value;
-				console.log(`设置已更新: ${key} = ${value}`);
+				logger.info(`设置已更新: ${key} = ${value}`);
 			} else {
 				console.warn(`未知的设置项: ${key}`);
 			}
@@ -46,13 +47,13 @@ export const useGlobalStore = defineStore("global", {
 					this.settings[key] = newSettings[key];
 				}
 			});
-			console.log("批量设置已更新:", newSettings);
+			logger.info("批量设置已更新:", newSettings);
 		},
 
 		// 重置为默认设置
 		resetToDefault() {
 			this.settings = { ...defaultSettings };
-			console.log("设置已重置为默认值");
+			logger.info("设置已重置为默认值");
 		},
 
 		// 导入设置
@@ -64,7 +65,7 @@ export const useGlobalStore = defineStore("global", {
 				}
 			});
 			this.settings = { ...this.settings, ...validSettings };
-			console.log("设置已导入:", validSettings);
+			logger.info("设置已导入:", validSettings);
 		},
 
 		// 导出设置

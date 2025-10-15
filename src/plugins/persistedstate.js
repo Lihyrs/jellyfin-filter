@@ -1,4 +1,4 @@
-import log from "../lib/Logger";
+import logger from "../lib/Logger";
 
 // 改进版的插件
 function persistedState() {
@@ -39,7 +39,7 @@ function persistedState() {
 			const storedValue = config.storage.getItem(config.key);
 			if (storedValue) {
 				const storedState = config.deserialize(storedValue);
-				log(`恢复存储状态: ${config.key}`, storedState);
+				logger.info(`恢复存储状态: ${config.key}`, storedState);
 
 				if (config.paths && Array.isArray(config.paths)) {
 					const patchState = {};
@@ -56,7 +56,7 @@ function persistedState() {
 				}
 			}
 		} catch (error) {
-			log.error("恢复状态失败:", error);
+			logger.error("恢复状态失败:", error);
 		}
 
 		// 监听状态变化并保存
@@ -77,10 +77,10 @@ function persistedState() {
 				}
 
 				const serializedState = config.serialize(stateToSave);
-				log(`保存状态: ${config.key}`, stateToSave);
+				logger.info(`保存状态: ${config.key}`, stateToSave);
 				config.storage.setItem(config.key, serializedState);
 			} catch (error) {
-				log.error("保存状态失败:", error);
+				logger.error("保存状态失败:", error);
 			}
 		});
 
@@ -108,7 +108,7 @@ function persistedState() {
 
 		// 添加清除持久化数据的方法
 		store.$clearPersistedState = function () {
-			log(`清除持久化数据: ${config.key}`);
+			logger.info(`清除持久化数据: ${config.key}`);
 			config.storage.setItem(config.key, null);
 		};
 

@@ -54,6 +54,11 @@ class Logger {
 		this.prefix = this._originalConfig.prefix || "[App]";
 	}
 
+	// 新增：log 方法，作为 info 的别名
+	log = (...args) => {
+		this._log("info", ...args);
+	};
+
 	setLevel = (level) => {
 		if (this.levels[level] !== undefined) {
 			this.level = level;

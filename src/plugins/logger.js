@@ -1,5 +1,5 @@
 // logger.js (插件)
-import { Logger } from "./utils/Logger.js";
+import { Logger } from "../lib/Logger";
 
 // 已安装标志
 let installed = false;
@@ -16,14 +16,14 @@ const LoggerPlugin = {
 		const logger = Logger.getInstance(options);
 
 		// 挂载到全局属性
-		app.config.globalProperties.$log = logger;
+		app.config.globalProperties.$logger = logger;
 
 		// 提供依赖注入
 		app.provide("$logger", logger);
 
 		// 开发环境下挂载到 window 方便调试
 		if (process.env.NODE_ENV === "development" || import.meta.env?.DEV) {
-			window.$log = logger;
+			window.$logger = logger;
 		}
 
 		// logger.info("Logger 插件安装完成");
@@ -33,9 +33,9 @@ const LoggerPlugin = {
 
 		// 添加卸载方法
 		app.config.globalProperties.$uninstallLogger = () => {
-			delete app.config.globalProperties.$log;
-			if (window.$log) {
-				delete window.$log;
+			delete app.config.globalProperties.$logger;
+			if (window.$logger) {
+				delete window.$logger;
 			}
 			installed = false;
 			logger.info("Logger 插件已卸载");

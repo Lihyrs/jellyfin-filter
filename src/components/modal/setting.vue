@@ -87,7 +87,7 @@
 				</n-grid>
 
 				<n-grid class="setting-group" :cols="2" :x-gap="24">
-					<n-gi v-for="(value, key) in hotkes" :key="key">
+					<n-gi v-for="(value, key) in hotkeys" :key="key">
 						<n-form-item
 							class="setting-item"
 							:show-feedback="false"
@@ -140,7 +140,7 @@ import { ref, watch } from "vue";
 import {
 	jellyfin,
 	html,
-	hotkes,
+	hotkeys,
 	filterSwitch,
 	other,
 	defaultSettings,
@@ -213,7 +213,7 @@ export default {
 			other,
 			jellyfin,
 			html,
-			hotkes,
+			hotkeys: { ...hotkeys },
 			handleSubmit,
 			hide,
 			show,
