@@ -1,4 +1,3 @@
-[file name]: FixedFloatMenu.vue [file content begin]
 <template>
 	<div
 		class="floating-menu-container"
@@ -42,6 +41,13 @@ export default {
 			type: Object,
 			default: () => ({ x: 20, y: 20 }),
 		},
+		// 初始显示位置：left, right, top, bottom, center
+		initialPlacement: {
+			type: String,
+			default: "right",
+			validator: (value) =>
+				["left", "right", "top", "bottom", "center"].includes(value),
+		},
 		// 是否可拖拽
 		draggable: {
 			type: Boolean,
@@ -71,6 +77,48 @@ export default {
 			y: initialTop,
 		});
 		const actualDirection = ref(props.direction);
+
+		// 计算初始位置
+		const calculateInitialPosition = () => {
+			const viewportWidth = window.innerWidth;
+			const viewportHeight = window.innerHeight;
+			const containerWidth = container.value?.offsetWidth || 50;
+			const containerHeight = container.value?.offsetHeight || 50;
+
+			switch (props.initialPlacement) {
+				case "left":
+					return {
+						x: 20,
+						y: viewportHeight * 0.2 - containerHeight / 2,
+					};
+				case "right":
+					return {
+						x: viewportWidth - containerWidth - 20,
+						y: viewportHeight * 0.2 - containerHeight / 2,
+					};
+				case "top":
+					return {
+						x: viewportWidth * 0.5 - containerWidth / 2,
+						y: 20,
+					};
+				case "bottom":
+					return {
+						x: viewportWidth * 0.5 - containerWidth / 2,
+						y: viewportHeight - containerHeight - 20,
+					};
+				case "center":
+					return {
+						x: viewportWidth * 0.5 - containerWidth / 2,
+						y: viewportHeight * 0.5 - containerHeight / 2,
+					};
+				default:
+					// 使用自定义位置
+					return {
+						x: props.initialPosition.x,
+						y: props.initialPosition.y,
+					};
+			}
+		};
 
 		// 容器样式
 		const containerStyle = computed(() => ({
@@ -210,14 +258,25 @@ export default {
 			}
 		};
 
-		// 窗口大小变化时重新计算方向
+		// 窗口大小变化时重新计算位置和方向
 		const handleResize = () => {
+			// 重新计算初始位置
+			const newPosition = calculateInitialPosition();
+			position.value.x = newPosition.x;
+			position.value.y = newPosition.y;
+
+			// 重新计算方向
 			if (isMenuActive.value && props.autoAdjust) {
 				actualDirection.value = calculateAvailableSpace();
 			}
 		};
 
 		onMounted(() => {
+			// 设置初始位置
+			const initialPos = calculateInitialPosition();
+			position.value.x = initialPos.x;
+			position.value.y = initialPos.y;
+
 			document.addEventListener("click", handleClickOutside);
 			window.addEventListener("resize", handleResize);
 		});
@@ -324,4 +383,3 @@ export default {
 	transform: translate(0, 0);
 }
 </style>
-[file content end]
