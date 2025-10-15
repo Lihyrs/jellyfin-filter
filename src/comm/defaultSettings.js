@@ -1,9 +1,4 @@
-import {
-	FILTER_AV_HOT_KEY,
-	RECOVER_HOT_KEY,
-	GET_COLLECTION_HOT_KEY,
-	FETCH_AVS_HOT_KEY,
-} from "./keys";
+import { HOT_KEYS } from "./keys";
 export const jellyfin = {
 	// 从jellyfin 控制台获取
 	apiKey: "a4be50c24d0d4278b3142cdaee06577d",
@@ -23,11 +18,6 @@ export const jellyfin = {
 	// 默认从小到大排序
 	sortLabelAsc: true,
 };
-export const hotkes = {};
-hotkes[FETCH_AVS_HOT_KEY] = "@@";
-hotkes[RECOVER_HOT_KEY] = "ss";
-hotkes[GET_COLLECTION_HOT_KEY] = "!!";
-hotkes[FILTER_AV_HOT_KEY] = "ee";
 
 export const html = {
 	// 是否开启标签功能
@@ -78,7 +68,7 @@ export const defaultSettings = {
 	//---for jellyfin end
 
 	//----hotkeys
-	...hotkes,
+	...HOT_KEYS,
 	//---web
 	...html,
 	...other,
