@@ -17,8 +17,8 @@ import FilterHelper from "./helpers/filterHelper";
 import getCode from "./utils/getCode";
 import KeysEvent from "./lib/KeysEvent";
 import { notificationManager as $notification } from "./lib/Notification";
-import useCreatePersistedDataShower from "./lib/PersistedDataShower";
-import logger from "./lib/Logger";
+// import logger from "./lib/Logger";
+// import logger from "loglevel";
 
 const emit = defineEmits(["restart"]);
 
@@ -29,7 +29,6 @@ const highlightedAVs = ref(new Set());
 let webHelper = null;
 
 const $logger = inject("$logger");
-$logger.setLevel("debug");
 
 // 在 setup 中获取通知实例
 const notification = useNotification();
@@ -119,7 +118,7 @@ const getItemsFromJellyfin = async function () {
 const filter = async function () {
 	$logger.debug("begin filter");
 	const webHelper = filterHelper.getCurrentPageHelper();
-	const webCodes = webHelper.findcode();
+	const webCodes = webHelper.findCode();
 
 	if (webCodes) {
 		// 修复：正确的 Map 和 Set 合并语法
@@ -142,7 +141,7 @@ const filter = async function () {
 			new Set(webCodes.keys()), // 修复：方法调用需要括号
 			jfCodes
 		);
-		logger.debug("check exist:", jfCodes, "--", existCodes);
+		$logger.debug("check exist:", jfCodes, "--", existCodes);
 		if (existCodes.size === 0) return;
 
 		let boxes = [];
@@ -166,7 +165,7 @@ const filter = async function () {
 			$logger.warn("没有找到作品元素");
 			return;
 		}
-		logger.debug("exist boxes: ", boxes);
+		$logger.debug("exist boxes: ", boxes);
 
 		webHelper.highlightExisted(boxes);
 		highlightedAVs.value = new Set(boxes);

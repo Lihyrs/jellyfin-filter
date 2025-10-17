@@ -1,5 +1,5 @@
 // useCreatePersistedDataShower.js
-import logger from './Logger';
+import logger from "./Logger";
 class PersistedDataShower {
 	constructor() {
 		this._store = null;
@@ -48,9 +48,7 @@ class PersistedDataShower {
 
 	showPersistedData() {
 		if (!this._initialized || !this._store) {
-			logger.warn(
-				"❌ PersistedDataShower 未初始化，请先调用 setStore()"
-			);
+			logger.warn("❌ PersistedDataShower 未初始化，请先调用 setStore()");
 			return false;
 		}
 
@@ -73,17 +71,15 @@ class PersistedDataShower {
 			return false;
 		}
 
-
 		try {
 			const data = this._store.$getPersistedData();
 			const stats = this._store.$getPersistedStats();
 
-			logger.group("📦 持久化数据调试");
+			logger.log("📦 持久化数据调试");
 			logger.log("🔑 Store ID:", this._store.$id);
 			logger.log("📊 统计数据:", stats);
 			logger.log("💾 持久化数据:", data);
 			logger.log("⚙️ 配置:", this._store.$getPersistConfig());
-			logger.groupEnd();
 
 			return true;
 		} catch (error) {

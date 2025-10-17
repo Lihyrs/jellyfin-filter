@@ -1,7 +1,7 @@
 // filterHelper
 import { SITE_HELPERS } from "./web";
 import { SITE_CONFIGS } from "../comm/constant";
-import { logger } from "../lib/Logger";
+import logger from "../lib/Logger";
 
 // const jellyfin = new Jellyfin
 

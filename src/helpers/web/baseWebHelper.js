@@ -1,15 +1,10 @@
 import { HTML_ATTRI, ICONS, DEFAULT_CSS_VAR_PREFIX } from "../../comm/constant";
-import { logger } from "../../lib/Logger";
+import logger from "../../lib/Logger";
 import getcode from "../../utils/getCode";
 
 const { AV_OUTLINE, AV_OUTLINE_PRIORITY, AV_CODE, NODE_PROCESSED } =
 	HTML_ATTRI.data;
-const {
-	AV_EXISTED,
-	AV_BOX,
-	JELLYFIN_ICON: JF_ICON_CLASS,
-	AV_LINK,
-} = HTML_ATTRI.className;
+const { AV_EXISTED, AV_BOX, AV_LINK, JELLYFIN_ICON } = HTML_ATTRI.className;
 
 class BaseWebHelper {
 	#highlighted = new Set();
@@ -46,7 +41,7 @@ class BaseWebHelper {
 		// 合并初始化方法
 		this.#jellyfinIcon = Object.assign(document.createElement("img"), {
 			src: ICONS.jellyfin,
-			className: JF_ICON_CLASS,
+			className: JELLYFIN_ICON,
 		});
 
 		this.#codeLink = Object.assign(document.createElement("a"), {
@@ -211,6 +206,12 @@ class BaseWebHelper {
 		box.setAttribute(NODE_PROCESSED, "true");
 	}
 
+	/**
+	 *
+	 * @param {HTMLElement} element
+	 * @param {string} code
+	 * @returns
+	 */
 	#processCodeElement(element, code) {
 		if (!element || element.getAttribute(NODE_PROCESSED)) return;
 
@@ -219,7 +220,7 @@ class BaseWebHelper {
 		link.textContent = code;
 		link.appendChild(this.#jellyfinIcon.cloneNode(true));
 
-		element.replaceWith(link);
+		element.firstChild.replaceWith(link);
 		element.setAttribute(NODE_PROCESSED, "true");
 	}
 

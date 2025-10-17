@@ -306,12 +306,11 @@ function persistedState() {
 				const data = store.$getPersistedData();
 				const stats = store.$getPersistedStats();
 
-				logger.group("📦 持久化数据调试");
+				logger.log("📦 持久化数据调试");
 				logger.log("🔑 Store ID:", store.$id);
 				logger.log("📊 统计数据:", stats);
 				logger.log("💾 持久化数据:", data);
 				logger.log("⚙️ 配置:", store.$getPersistConfig());
-				logger.groupEnd();
 
 				return true;
 			} catch (error) {

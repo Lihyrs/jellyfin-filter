@@ -7,41 +7,24 @@ const createAttr = (type) => (str) =>
 const createDataAttr = createAttr("data");
 const createClassName = createAttr("class");
 
-// 统一配置
-const CONFIG = {
-	data: [
-		"fake-title",
-		"outline",
-		"outline-priority",
-		"code",
-		"textOverflow",
-		"processed",
-	],
-	class: [
-		"label",
-		"link",
-		"label-link",
-		"label-text",
-		"jf-icon",
-		"existed",
-		"box",
-	],
+const data = {
+	FAKE_TITLE: createDataAttr("fake-title"),
+	AV_OUTLINE: createDataAttr("outline"),
+	AV_OUTLINE_PRIORITY: createDataAttr("outline-priority"),
+	AV_CODE: createDataAttr("code"),
+	AV_TEXTOVERFLOW: createDataAttr("textOverflow"),
+	NODE_PROCESSED: createDataAttr("processed"),
 };
 
-// 自动生成
-const data = Object.fromEntries(
-	CONFIG.data.map((key) => [
-		key.toUpperCase().replace(/-/g, "_"),
-		createDataAttr(key),
-	])
-);
-
-const className = Object.fromEntries(
-	CONFIG.class.map((key) => [
-		key.toUpperCase().replace(/-/g, "_"),
-		createClassName(key),
-	])
-);
+const className = {
+	AV_LABEL: createClassName("label"),
+	AV_LINK: createClassName("link"),
+	AV_LABEL_LINK: createClassName("label-link"),
+	AV_LABEL_TEXT: createClassName("label-text"),
+	JELLYFIN_ICON: createClassName("jf-icon"),
+	AV_EXISTED: createClassName("existed"),
+	AV_BOX: createClassName("box"),
+};
 
 export const HTML_ATTRI = { data, className };
 export { DEFAULT_CSS_VAR_PREFIX };
