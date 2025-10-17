@@ -1,18 +1,20 @@
+// main.js
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
 import logger from "./plugins/logger";
 import persistedState from "./plugins/persistedstate";
 import "./styles/style.css";
-import App from "./App.vue";
+import AppWrapper from "./AppWrapper.vue";
 
 const pinia = createPinia();
-const app = createApp(App);
+const app = createApp(AppWrapper);
 
-pinia.use(persistedState);
+// 注册持久化插件
+pinia.use(persistedState());
 
-app.use(logger);
 app.use(pinia);
+app.use(logger);
 
 const appElement = document.createElement("div");
 document.body.appendChild(appElement);
