@@ -164,10 +164,12 @@ const onPositionChange = (position) => {
 	transform: scale(1.05);
 }
 
-/* img {
+img {
 	width: 28px;
 	height: 28px;
-} */
+	display: block;
+	object-fit: contain;
+}
 
 /* .n-button[disabled] {
 	opacity: 0.6;
