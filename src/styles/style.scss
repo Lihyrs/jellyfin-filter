@@ -1,0 +1,17 @@
+.jf-av-box {
+	outline: unset;
+	.jf-av-link {
+		.jf-jellyfin-icon {
+			display: none !important;
+		}
+	}
+}
+
+.jf-av-existed {
+	outline: var(--jf-av-outline) !important;
+	.jf-av-link {
+		.jf-jellyfin-icon {
+			display: inline-block !important;
+		}
+	}
+}

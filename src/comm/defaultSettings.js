@@ -56,7 +56,7 @@ export const jellyfin = {
 	extraSearchParams: "",
 	// 额外的fetch参数，格式为：limit:200;parentId:xxx
 	// limit不填则默认为200，填入0则获取全部数据
-	extraFetchParams: "limit:200",
+	extraFetchParams: "limit:0",
 	// 默认从小到大排序
 	sortLabelAsc: true,
 };

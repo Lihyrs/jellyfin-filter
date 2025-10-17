@@ -48,7 +48,7 @@ function serialize(data) {
 }
 
 function deserialize(data) {
-	logger.debug("deserialize:", data);
+	// logger.debug("deserialize:", data);
 	function processValue(value) {
 		// 处理基本类型
 		if (value === null || typeof value !== "object") {
@@ -84,7 +84,7 @@ function deserialize(data) {
 
 	const parsed = data;
 	const result = processValue(parsed);
-	logger.debug("deserialize: ", data, parsed, result);
+	// logger.debug("deserialize: ", data, parsed, result);
 	return result;
 }
 
@@ -172,10 +172,7 @@ function persistedState() {
 				logger.info(`保存状态: ${config.key}`, stateToSave);
 				config.storage.setItem(config.key, serializedState);
 				if (config.debug) {
-					logger.debug(
-						"已保存的数据: ",
-						store.$getPersistedStats?.()
-					);
+					store.$showPersistedData();
 				}
 			} catch (error) {
 				logger.error("保存状态失败:", error);
@@ -301,6 +298,25 @@ function persistedState() {
 			} catch (error) {
 				logger.error("导出持久化数据失败:", error);
 				return null;
+			}
+		};
+
+		store.$showPersistedData = function () {
+			try {
+				const data = store.$getPersistedData();
+				const stats = store.$getPersistedStats();
+
+				logger.group("📦 持久化数据调试");
+				logger.log("🔑 Store ID:", store.$id);
+				logger.log("📊 统计数据:", stats);
+				logger.log("💾 持久化数据:", data);
+				logger.log("⚙️ 配置:", store.$getPersistConfig());
+				logger.groupEnd();
+
+				return true;
+			} catch (error) {
+				logger.error("❌ 显示持久化数据失败:", error);
+				return false;
 			}
 		};
 

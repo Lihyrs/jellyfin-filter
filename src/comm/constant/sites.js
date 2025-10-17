@@ -7,6 +7,7 @@ export const SITE_NAMES = {
 	FC2: "fc2",
 };
 
+
 // 站点配置工厂函数
 const createSiteConfig = (
 	name,

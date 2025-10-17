@@ -46,14 +46,15 @@ const state = {
 	isCollectionHidden: false,
 };
 
-const emit = defineEmits(["open-setting"]);
+const emit = defineEmits(["open-setting", "batch-open-link", "toggle-colle"]);
 
 // 菜单项处理函数
-const batchOpenLink = async () => {};
+const batchOpenLink = async () => {
+	emit("batch-open-link");
+};
 
 const toggleCollection = () => {
-	state.isCollectionHidden = !state.isCollectionHidden;
-	$logger.log(state.isCollectionHidden ? "隐藏合集作品" : "显示合集作品");
+	emit("toggle-colle");
 };
 
 const openSetting = () => {

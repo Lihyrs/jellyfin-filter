@@ -18,22 +18,13 @@ class FilterHelper {
 	 * @param {Set<string>} jellyfinCodes
 	 * @returns {Set<string>|null}
 	 */
-	async getExistCodes(siteCodes, jellyfinCodes) {
+	getExistCodes(siteCodes, jellyfinCodes) {
 		if (siteCodes && jellyfinCodes) {
 			return siteCodes.intersection(jellyfinCodes);
 		}
 		return null;
 	}
 
-	/**
-	 * 在页面中查找作品代码
-	 * @returns {Map<string, {box: HTMLElement, type: string}>} 代码映射表
-	 * @example
-	 * // 返回示例：Map { 'abc123' => {box: div.element, type: 'music'} }
-	 */
-	getCodeFormPage() {
-		return this.#webHelper.findCode();
-	}
 	/**
 	 * 根据 URL 获取对应的站点助手实例
 	 * @param {string} url - 要检测的 URL
@@ -54,20 +45,6 @@ class FilterHelper {
 
 		return new HelperClass();
 	}
-
-	/**
-	 *
-	 * @param {Array[HTMLElement]} boxes
-	 * @param {string} outlineStyle
-	 */
-	setHighlightStyle(boxes, outlineStyle) {
-		this.#webHelper.addOutlineStyle(boxes, outlineStyle);
-	}
-
-	clearHighlightStyle() {
-		this.#webHelper.clearHighlightStyle();
-	}
-
 	/**
 	 * 根据 URL 检测站点配置
 	 * @param {string} url - 要检测的 URL

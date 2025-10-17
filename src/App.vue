@@ -1,5 +1,5 @@
 <script setup>
-import { provide, ref, inject, onMounted, nextTick } from "vue";
+import { provide, ref, inject, onMounted, computed, watch } from "vue";
 import { useNotification } from "naive-ui";
 import {
 	FILTER_AV_HOT_KEY,
@@ -18,12 +18,15 @@ import getCode from "./utils/getCode";
 import KeysEvent from "./lib/KeysEvent";
 import { notificationManager as $notification } from "./lib/Notification";
 import useCreatePersistedDataShower from "./lib/PersistedDataShower";
+import logger from "./lib/Logger";
+
+const emit = defineEmits(["restart"]);
 
 const globalStore = useGlobalStore();
 const settingModalShow = ref(!true);
-const noop = () => {};
+const highlightedAVs = ref(new Set());
 
-const emit = defineEmits(["restart"]);
+let webHelper = null;
 
 const $logger = inject("$logger");
 $logger.setLevel("debug");
@@ -31,9 +34,17 @@ $logger.setLevel("debug");
 // 在 setup 中获取通知实例
 const notification = useNotification();
 $notification.setNotification(notification);
-const persDataShower = useCreatePersistedDataShower(globalStore);
+// const persDataShower = useCreatePersistedDataShower(globalStore);
 
 provide(GLOBAL_STORE_KEY, globalStore);
+
+const filterHelper = new FilterHelper();
+
+// 创建响应式的 emphasisOutlineStyle
+const emphasisOutlineStyle = computed({
+	get: () => globalStore.settings.emphasisOutlineStyle,
+	set: (value) => globalStore.updateSetting("emphasisOutlineStyle", value),
+});
 
 const handleOpenSetting = () => {
 	settingModalShow.value = true;
@@ -46,24 +57,31 @@ const jellyfin = new Jellyfin(
 	globalStore.settings.userId
 );
 
-const filterHelper = new FilterHelper();
-
-onMounted(async () => {
+onMounted(() => {
 	const url = window.location.href;
-	if (!filterHelper.isUrlSupported(url)) {
-		$logger.info("还没有支持该网站");
+	if (!filterHelper?.isUrlSupported(url)) {
+		$logger.warn("还没有支持该网站");
 		return;
 	}
+
 	filterHelper.init(window.location.href);
+	webHelper = filterHelper.getCurrentPageHelper();
+
+	if (webHelper) {
+		// 初始化 CSS 变量
+		webHelper.setCssVariable("outline", emphasisOutlineStyle.value);
+	}
 	keysEvent.on(FETCH_AVS_HOT_KEY.key, getItemsFromJellyfin);
 	keysEvent.on(FILTER_AV_HOT_KEY.key, filter);
 	keysEvent.on(RECOVER_HOT_KEY.key, recover);
-	await nextTick();
-	globalStore.$reset();
-	// persDataShower.showPersistedData();
-	setTimeout(() => {
-		persDataShower.showPersistedData();
-	}, 100);
+});
+
+// 监听 emphasisOutlineStyle 变化
+watch(emphasisOutlineStyle, (newValue, oldValue) => {
+	if (webHelper && newValue !== oldValue) {
+		$logger.debug(`emphasisOutlineStyle 变更: ${oldValue} -> ${newValue}`);
+		webHelper.setCssVariable("outline", newValue);
+	}
 });
 
 const getItemsFromJellyfin = async function () {
@@ -100,7 +118,9 @@ const getItemsFromJellyfin = async function () {
 
 const filter = async function () {
 	$logger.debug("begin filter");
-	const webCodes = filterHelper.getCodeFormPage();
+	const webHelper = filterHelper.getCurrentPageHelper();
+	const webCodes = webHelper.findcode();
+
 	if (webCodes) {
 		// 修复：正确的 Map 和 Set 合并语法
 		globalStore.updateWebBoxes(
@@ -117,31 +137,55 @@ const filter = async function () {
 	}
 	if (webCodes && globalStore.jellyfin.codes.size) {
 		const jfCodes = new Set(globalStore.jellyfin.codes);
+		// logger.debug("check exist:", jfCodes);
 		const existCodes = filterHelper.getExistCodes(
 			new Set(webCodes.keys()), // 修复：方法调用需要括号
 			jfCodes
 		);
-
+		logger.debug("check exist:", jfCodes, "--", existCodes);
 		if (existCodes.size === 0) return;
-		const boxes = Array.from(existCodes) // 修复：将 Set 转为数组
-			.map((k) => webCodes.get(k)?.box)
-			.filter(Boolean);
+
+		let boxes = [];
+		let codeEles = [];
+
+		Array.from(existCodes).forEach((k) => {
+			const { box, codeElement } = webCodes.get(k) || {};
+			if (box) boxes.push(box);
+			if (codeElement) codeEles.push(codeElement);
+		});
+		// const boxes = Array.from(existCodes) // 修复：将 Set 转为数组
+		// 	.map((k) => {
+		// 		const obj = webCodes.get(k);
+		// 		return {
+		// 			box: obj?.box,
+		// 		};
+		// 	})
+		// 	.filter(Boolean);
 		if (boxes.length === 0) {
 			// 修复：检查数组长度而不是布尔值
 			$logger.warn("没有找到作品元素");
 			return;
 		}
-		filterHelper.setHighlightStyle(
-			boxes,
-			globalStore.settings.emphasisOutlineStyle
-		);
+		logger.debug("exist boxes: ", boxes);
+
+		webHelper.highlightExisted(boxes);
+		highlightedAVs.value = new Set(boxes);
+
+		if (codeEles.length === 0) {
+			// 修复：检查数组长度而不是布尔值
+			$logger.warn("没有找到番号元素");
+			return;
+		}
 	} else if (!webCodes) {
 		$logger.warn("页面上没有找到番号");
+	} else {
+		$logger.warn("没有获取到jellyfin的数据，请检查设置或网络");
 	}
 };
 
 const recover = function () {
-	filterHelper.clearHighlightStyle();
+	const webHelpter = filterHelper.getCurrentPageHelper();
+	webHelpter.unHightExisted(Array.from(highlightedAVs.value));
 };
 </script>
 
@@ -152,4 +196,4 @@ const recover = function () {
 	<float-menu @open-setting="handleOpenSetting"></float-menu>
 </template>
 
-<style scoped></style>
+<style lang="less"></style>

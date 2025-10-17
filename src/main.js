@@ -4,7 +4,7 @@ import { createPinia } from "pinia";
 
 import logger from "./plugins/logger";
 import persistedState from "./plugins/persistedstate";
-import "./styles/style.css";
+import "./styles/style.scss";
 import AppWrapper from "./AppWrapper.vue";
 
 const pinia = createPinia();
