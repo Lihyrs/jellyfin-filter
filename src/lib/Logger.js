@@ -92,27 +92,174 @@ class Logger {
 		this._log("error", ...args);
 	};
 
-	// 分组日志
-	group = (label, ...args) => {
-		if (this.levels["debug"] >= this.levels[this.level]) {
+	// ========== 增强的 Group 方法 ==========
+
+	/**
+	 * 开始一个日志分组
+	 * @param {string} label - 分组标签
+	 * @param {string} [level="debug"] - 日志级别
+	 */
+	group = (label, level = "debug") => {
+		if (this.levels[level] >= this.levels[this.level]) {
 			console.group(`${this.prefix} ${label}`);
-			args.forEach((arg) => console.log(arg));
-			console.groupEnd();
 		}
 	};
 
-	// 性能测量
-	time = (label) => {
-		if (this.levels["debug"] >= this.levels[this.level]) {
+	/**
+	 * 开始一个可折叠的日志分组
+	 * @param {string} label - 分组标签
+	 * @param {string} [level="debug"] - 日志级别
+	 */
+	groupCollapsed = (label, level = "debug") => {
+		if (this.levels[level] >= this.levels[this.level]) {
+			console.groupCollapsed(`${this.prefix} ${label}`);
+		}
+	};
+
+	/**
+	 * 结束当前日志分组
+	 */
+	groupEnd = () => {
+		console.groupEnd();
+	};
+
+	/**
+	 * 自动分组 - 执行函数并在分组中显示结果
+	 * @param {string} label - 分组标签
+	 * @param {Function} fn - 要执行的函数
+	 * @param {string} [level="debug"] - 日志级别
+	 * @returns {*} 函数的返回值
+	 */
+	groupAuto = (label, fn, level = "debug") => {
+		if (this.levels[level] < this.levels[this.level]) {
+			return fn();
+		}
+
+		this.groupCollapsed(label, level);
+		try {
+			const result = fn();
+			if (result !== undefined) {
+				this.log("返回值:", result);
+			}
+			return result;
+		} catch (error) {
+			this.error("执行出错:", error);
+			throw error;
+		} finally {
+			this.groupEnd();
+		}
+	};
+
+	/**
+	 * 异步自动分组
+	 * @param {string} label - 分组标签
+	 * @param {Function} asyncFn - 要执行的异步函数
+	 * @param {string} [level="debug"] - 日志级别
+	 * @returns {Promise<*>} 异步函数的返回值
+	 */
+	async groupAutoAsync(label, asyncFn, level = "debug") {
+		if (this.levels[level] < this.levels[this.level]) {
+			return await asyncFn();
+		}
+
+		this.groupCollapsed(label, level);
+		try {
+			const result = await asyncFn();
+			if (result !== undefined) {
+				this.log("返回值:", result);
+			}
+			return result;
+		} catch (error) {
+			this.error("执行出错:", error);
+			throw error;
+		} finally {
+			this.groupEnd();
+		}
+	}
+
+	/**
+	 * 嵌套分组
+	 * @param {string} label - 分组标签
+	 * @param {Function} fn - 要执行的函数
+	 * @param {string} [level="debug"] - 日志级别
+	 */
+	groupNested = (label, fn, level = "debug") => {
+		if (this.levels[level] < this.levels[this.level]) {
+			fn();
+			return;
+		}
+
+		this.group(label, level);
+		try {
+			fn();
+		} catch (error) {
+			this.error("嵌套分组执行出错:", error);
+		} finally {
+			this.groupEnd();
+		}
+	};
+
+	// ========== 表格日志 ==========
+
+	/**
+	 * 表格形式输出
+	 * @param {Array|Object} data - 表格数据
+	 * @param {string} [level="debug"] - 日志级别
+	 */
+	table = (data, level = "debug") => {
+		if (this.levels[level] >= this.levels[this.level]) {
+			console.table(data);
+		}
+	};
+
+	// ========== 性能测量 ==========
+
+	/**
+	 * 开始性能测量
+	 * @param {string} label - 测量标签
+	 * @param {string} [level="debug"] - 日志级别
+	 */
+	time = (label, level = "debug") => {
+		if (this.levels[level] >= this.levels[this.level]) {
 			console.time(`${this.prefix} ${label}`);
 		}
 	};
 
-	timeEnd = (label) => {
-		if (this.levels["debug"] >= this.levels[this.level]) {
+	/**
+	 * 结束性能测量
+	 * @param {string} label - 测量标签
+	 * @param {string} [level="debug"] - 日志级别
+	 */
+	timeEnd = (label, level = "debug") => {
+		if (this.levels[level] >= this.levels[this.level]) {
 			console.timeEnd(`${this.prefix} ${label}`);
 		}
 	};
+
+	/**
+	 * 自动性能测量
+	 * @param {string} label - 测量标签
+	 * @param {Function} fn - 要测量的函数
+	 * @param {string} [level="debug"] - 日志级别
+	 * @returns {*} 函数的返回值
+	 */
+	timeAuto = (label, fn, level = "debug") => {
+		if (this.levels[level] < this.levels[this.level]) {
+			return fn();
+		}
+
+		this.time(label, level);
+		try {
+			const result = fn();
+			this.timeEnd(label, level);
+			return result;
+		} catch (error) {
+			this.timeEnd(label, level);
+			throw error;
+		}
+	};
+
+	// ========== 私有方法 ==========
 
 	_log = (level, ...args) => {
 		if (this.levels[level] < this.levels[this.level]) {

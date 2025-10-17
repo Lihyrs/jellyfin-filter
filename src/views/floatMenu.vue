@@ -3,8 +3,6 @@
 		direction="bottom"
 		:draggable="true"
 		:auto-adjust="true"
-		@menu-show="onMenuShow"
-		@menu-hide="onMenuHide"
 		@position-change="onPositionChange">
 		<n-icon size="30">
 			<img :src="ICONS.menu" alt="菜单图标" />
@@ -27,8 +25,7 @@
 						<n-icon size="28px">
 							<img
 								:src="getIconSrc(obj)"
-								:alt="obj.tooltip || '菜单项图标'"
-								@error="handleIconError(obj)" />
+								:alt="obj.tooltip || '菜单项图标'" />
 						</n-icon>
 					</n-button>
 				</template>
@@ -56,7 +53,7 @@ const batchOpenLink = async () => {};
 
 const toggleCollection = () => {
 	state.isCollectionHidden = !state.isCollectionHidden;
-	console.log(state.isCollectionHidden ? "隐藏合集作品" : "显示合集作品");
+	$logger.log(state.isCollectionHidden ? "隐藏合集作品" : "显示合集作品");
 };
 
 const openSetting = () => {
@@ -134,25 +131,25 @@ const handleItemClick = async (item) => {
 	try {
 		await item.handler();
 	} catch (error) {
-		console.error(`执行 ${item.tooltip} 时出错:`, error);
+		$logger.error(`执行 ${item.tooltip} 时出错:`, error);
 	}
 };
 
-const handleIconError = (item) => {
-	console.warn(`图标加载失败: ${item.tooltip}`);
-};
+// const handleIconError = (item) => {
+// 	// $logger.warn(`图标加载失败: ${item.tooltip}`);
+// };
 
-// 事件处理
-const onMenuShow = () => {
-	console.log("菜单显示");
-};
+// // 事件处理
+// const onMenuShow = () => {
+// 	// $logger.log("菜单显示");
+// };
 
-const onMenuHide = () => {
-	console.log("菜单隐藏");
-};
+// const onMenuHide = () => {
+// 	// $logger.log("菜单隐藏");
+// };
 
 const onPositionChange = (position) => {
-	console.log("位置改变:", position);
+	// $logger.log("位置改变:", position);
 };
 </script>
 
