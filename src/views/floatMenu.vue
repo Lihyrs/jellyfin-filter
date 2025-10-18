@@ -3,7 +3,8 @@
 		direction="bottom"
 		:draggable="true"
 		:auto-adjust="true"
-		@position-change="onPositionChange">
+		@position-change="onPositionChange"
+		@direction-change="onDirectionChange">
 		<n-icon size="30">
 			<img :src="ICONS.menu" alt="菜单图标" />
 		</n-icon>
@@ -13,7 +14,7 @@
 				v-for="(obj, index) in menuItems"
 				:key="getItemKey(obj, index)"
 				trigger="hover"
-				:placement="tooltipPlacement"
+				:placement="getTooltipPlacement(obj)"
 				:disabled="!obj.tooltip">
 				<template #trigger>
 					<n-button
@@ -37,14 +38,17 @@
 
 <script setup>
 import { NButton, NIcon, NTooltip } from "naive-ui";
-import { computed, defineEmits } from "vue";
+import { computed, defineEmits, ref } from "vue";
 import FixedFloatMenu from "../components/FixedFloatMenu.vue";
 import { ICONS } from "../comm/constant";
 
 // 状态管理
-const state = {
+const state = ref({
 	isCollectionHidden: false,
-};
+});
+
+// 菜单方向状态
+const menuDirection = ref("bottom");
 
 const emit = defineEmits(["open-setting", "batch-open-link", "toggle-colle"]);
 
@@ -58,10 +62,10 @@ const toggleCollection = () => {
 };
 
 const openSetting = () => {
-	state.isSettingsOpen = true;
+	state.value.isSettingsOpen = true;
 	emit("open-setting");
-	// 打开设置面板的逻辑
 };
+
 // 菜单项配置
 const menuItemsConfig = [
 	{
@@ -75,7 +79,8 @@ const menuItemsConfig = [
 	{
 		id: "toggle-collection",
 		tooltip: computed(
-			() => (state.isCollectionHidden ? "显示" : "隐藏") + "合集作品"
+			() =>
+				(state.value.isCollectionHidden ? "显示" : "隐藏") + "合集作品"
 		),
 		handler: toggleCollection,
 		icon: {
@@ -83,9 +88,6 @@ const menuItemsConfig = [
 			active: ICONS.hideAVS,
 		},
 		stateKey: "isCollectionHidden",
-		// type: computed(() =>
-		// 	state.isCollectionHidden ? "warning" : "default"
-		// ),
 	},
 	{
 		id: "settings",
@@ -93,15 +95,31 @@ const menuItemsConfig = [
 		handler: openSetting,
 		icon: {
 			default: ICONS.settings,
-			// 没有 active 图标，使用默认图标
 		},
-		// type: computed(() => (state.isSettingsOpen ? "primary" : "default")),
 	},
 ];
 
 // 计算属性
 const menuItems = computed(() => menuItemsConfig);
-const tooltipPlacement = computed(() => "left");
+
+// 根据菜单方向和排列方式计算 tooltip 位置
+const getTooltipPlacement = (item, index) => {
+	const direction = menuDirection.value;
+
+	// 如果是水平排列的菜单（左右方向）
+	if (direction === "left" || direction === "right") {
+		// 水平排列时，根据按钮位置决定 tooltip 方向
+		return "top"; // 或者根据索引决定
+	}
+
+	// 如果是垂直排列的菜单（上下方向）
+	if (direction === "top" || direction === "bottom") {
+		// 垂直排列时，根据按钮位置决定 tooltip 方向
+		return "left"; // 或者根据索引决定
+	}
+
+	return "bottom"; // 默认
+};
 
 // 方法
 const getItemKey = (item, index) => item.id || index;
@@ -116,7 +134,7 @@ const getIconSrc = (item) => {
 };
 
 const getItemState = (item) => {
-	return state[item.stateKey];
+	return state.value[item.stateKey];
 };
 
 const getButtonType = (item) => {
@@ -132,25 +150,18 @@ const handleItemClick = async (item) => {
 	try {
 		await item.handler();
 	} catch (error) {
-		$logger.error(`执行 ${item.tooltip} 时出错:`, error);
+		console.error(`执行 ${item.tooltip} 时出错:`, error);
 	}
 };
 
-// const handleIconError = (item) => {
-// 	// $logger.warn(`图标加载失败: ${item.tooltip}`);
-// };
-
-// // 事件处理
-// const onMenuShow = () => {
-// 	// $logger.log("菜单显示");
-// };
-
-// const onMenuHide = () => {
-// 	// $logger.log("菜单隐藏");
-// };
-
 const onPositionChange = (position) => {
-	// $logger.log("位置改变:", position);
+	console.log("位置改变:", position);
+};
+
+// 处理菜单方向变化
+const onDirectionChange = (direction) => {
+	console.log("菜单方向改变:", direction);
+	menuDirection.value = direction;
 };
 </script>
 
@@ -170,17 +181,4 @@ img {
 	display: block;
 	object-fit: contain;
 }
-
-/* .n-button[disabled] {
-	opacity: 0.6;
-	cursor: not-allowed;
-} */
-
-/* 图标样式 */
-/* .n-icon img {
-	display: block;
-	width: 20px;
-	height: 20px;
-	object-fit: contain;
-} */
 </style>

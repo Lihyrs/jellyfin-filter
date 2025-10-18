@@ -178,6 +178,23 @@ export default {
 		};
 
 		// 显示菜单
+		// const showMenu = async () => {
+		// 	clearTimeout(closeTimeout);
+
+		// 	if (props.autoAdjust) {
+		// 		// 先显示菜单以计算尺寸
+		// 		isMenuActive.value = true;
+		// 		await nextTick();
+
+		// 		// 计算最佳方向
+		// 		actualDirection.value = calculateAvailableSpace();
+		// 	} else {
+		// 		actualDirection.value = props.direction;
+		// 	}
+
+		// 	isMenuActive.value = true;
+		// 	emit("menu-show");
+		// };
 		const showMenu = async () => {
 			clearTimeout(closeTimeout);
 
@@ -187,7 +204,11 @@ export default {
 				await nextTick();
 
 				// 计算最佳方向
-				actualDirection.value = calculateAvailableSpace();
+				const newDirection = calculateAvailableSpace();
+				if (newDirection !== actualDirection.value) {
+					actualDirection.value = newDirection;
+					emit("direction-change", newDirection);
+				}
 			} else {
 				actualDirection.value = props.direction;
 			}
@@ -258,6 +279,18 @@ export default {
 			}
 		};
 
+		// // 窗口大小变化时重新计算位置和方向
+		// const handleResize = () => {
+		// 	// 重新计算初始位置
+		// 	const newPosition = calculateInitialPosition();
+		// 	position.value.x = newPosition.x;
+		// 	position.value.y = newPosition.y;
+
+		// 	// 重新计算方向
+		// 	if (isMenuActive.value && props.autoAdjust) {
+		// 		actualDirection.value = calculateAvailableSpace();
+		// 	}
+		// };
 		// 窗口大小变化时重新计算位置和方向
 		const handleResize = () => {
 			// 重新计算初始位置
@@ -267,7 +300,11 @@ export default {
 
 			// 重新计算方向
 			if (isMenuActive.value && props.autoAdjust) {
-				actualDirection.value = calculateAvailableSpace();
+				const newDirection = calculateAvailableSpace();
+				if (newDirection !== actualDirection.value) {
+					actualDirection.value = newDirection;
+					emit("direction-change", newDirection);
+				}
 			}
 		};
 
