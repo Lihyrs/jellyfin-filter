@@ -13,7 +13,7 @@ const data = {
 	AV_OUTLINE_PRIORITY: createDataAttr("outline-priority"),
 	AV_CODE: createDataAttr("code"),
 	AV_TEXTOVERFLOW: createDataAttr("textOverflow"),
-	NODE_PROCESSED: createDataAttr("processed"),
+	AV_NODE_PROCESSED: createDataAttr("processed"),
 };
 
 const className = {
@@ -24,6 +24,8 @@ const className = {
 	JELLYFIN_ICON: createClassName("jf-icon"),
 	AV_EXISTED: createClassName("existed"),
 	AV_BOX: createClassName("box"),
+	AV_BOX_HIDDEN: createClassName("hidden"),
+	AV_BOX_HIGHLIGHT: createClassName("highlight"),
 };
 
 export const HTML_ATTRI = { data, className };

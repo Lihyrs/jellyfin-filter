@@ -1,6 +1,14 @@
 <script setup>
-import { provide, ref, inject, onMounted, computed, watch } from "vue";
-import { useNotification } from "naive-ui";
+import {
+	provide,
+	ref,
+	inject,
+	onMounted,
+	computed,
+	watch,
+	onUnmounted,
+} from "vue";
+import { useNotification, useDialog } from "naive-ui";
 import {
 	FILTER_AV_HOT_KEY,
 	RECOVER_HOT_KEY,
@@ -17,6 +25,9 @@ import FilterHelper from "./helpers/filterHelper";
 import getCode from "./utils/getCode";
 import KeysEvent from "./lib/KeysEvent";
 import { notificationManager as $notification } from "./lib/Notification";
+import isValidUrl from "./utils/isValidUrl";
+import { batchOpenTab } from "./utils/batchOpenTab";
+import logger from "./lib/Logger";
 // import logger from "./lib/Logger";
 // import logger from "loglevel";
 
@@ -25,6 +36,12 @@ const emit = defineEmits(["restart"]);
 const globalStore = useGlobalStore();
 const settingModalShow = ref(!true);
 const highlightedAVs = ref(new Set());
+const curBoxSelector = ref("");
+const curCodeSelector = ref("");
+
+const openedBox = new Set();
+
+const dialog = useDialog();
 
 let webHelper = null;
 
@@ -45,6 +62,25 @@ const emphasisOutlineStyle = computed({
 	set: (value) => globalStore.updateSetting("emphasisOutlineStyle", value),
 });
 
+const avBoxes = computed({
+	get: () => {
+		const getBox = function (arr) {
+			return arr
+				.map(({ box }) => {
+					return box;
+				})
+				.filter(Boolean);
+		};
+
+		let ret = getBox(Array.from(globalStore.web.boxes.values()));
+		if (!ret.length) {
+			const tmp = findCurrentPageCodes();
+			ret = getBox(Array.from(tmp?.values()));
+		}
+		return Array.from(ret);
+	},
+});
+
 const handleOpenSetting = () => {
 	settingModalShow.value = true;
 };
@@ -57,11 +93,13 @@ const jellyfin = new Jellyfin(
 );
 
 onMounted(() => {
-	const url = window.location.href;
+	const { href: url, host } = window.location;
 	if (!filterHelper?.isUrlSupported(url)) {
 		$logger.warn("还没有支持该网站");
 		return;
 	}
+
+	globalStore.updateWebHost(host);
 
 	filterHelper.init(window.location.href);
 	webHelper = filterHelper.getCurrentPageHelper();
@@ -69,11 +107,15 @@ onMounted(() => {
 	if (webHelper) {
 		// 初始化 CSS 变量
 		webHelper.setCssVariable("outline", emphasisOutlineStyle.value);
+		curBoxSelector.value = webHelper.boxSelector;
+		curCodeSelector.value = webHelper.codeSelector;
 	}
 	keysEvent.on(FETCH_AVS_HOT_KEY.key, getItemsFromJellyfin);
 	keysEvent.on(FILTER_AV_HOT_KEY.key, filter);
 	keysEvent.on(RECOVER_HOT_KEY.key, recover);
 });
+
+onUnmounted(() => {});
 
 // 监听 emphasisOutlineStyle 变化
 watch(emphasisOutlineStyle, (newValue, oldValue) => {
@@ -115,34 +157,47 @@ const getItemsFromJellyfin = async function () {
 	}
 };
 
-const filter = async function () {
-	$logger.debug("begin filter");
-	const webHelper = filterHelper.getCurrentPageHelper();
-	const webCodes = webHelper.findCode();
-
+const findCurrentPageCodes = function () {
+	const webCodes = filterHelper.findCurrentPageCodes();
 	if (webCodes) {
-		// 修复：正确的 Map 和 Set 合并语法
 		globalStore.updateWebBoxes(
 			new Map([...globalStore.web.boxes, ...webCodes])
 		);
 		globalStore.updateWebCodes(
-			// 修复：正确的方法名
 			new Set([...globalStore.web.codes, ...webCodes.keys()])
 		);
 	}
+
+	return webCodes || null;
+};
+
+const filter = async function () {
+	$logger.debug("begin filter");
+	const webHelper = filterHelper.getCurrentPageHelper();
+	const webCodes = findCurrentPageCodes();
+
 	$logger.debug("webCode:", webCodes);
 	if (globalStore.jellyfin.codes.size === 0) {
 		await getItemsFromJellyfin();
 	}
 	if (webCodes && globalStore.jellyfin.codes.size) {
 		const jfCodes = new Set(globalStore.jellyfin.codes);
-		// logger.debug("check exist:", jfCodes);
-		const existCodes = filterHelper.getExistCodes(
-			new Set(webCodes.keys()), // 修复：方法调用需要括号
-			jfCodes
-		);
+		let webBoxes = [];
+		let webCodeSet = new Set();
+		webCodes.forEach((v, k) => {
+			const { box } = v;
+			if (box) webBoxes.push(box);
+			webCodeSet.add(k);
+		});
+		logger.debug("web--->:", webCodes, webBoxes, webCodeSet);
+		const existCodes = filterHelper.getExistCodes(webCodeSet, jfCodes);
 		$logger.debug("check exist:", jfCodes, "--", existCodes);
-		if (existCodes.size === 0) return;
+		if (existCodes.size === 0) {
+			$logger.debug("not exist-->", webBoxes);
+			webHelper.highlight(webBoxes);
+			highlightedAVs.value = new Set(webBoxes);
+			return;
+		}
 
 		let boxes = [];
 		let codeEles = [];
@@ -152,26 +207,15 @@ const filter = async function () {
 			if (box) boxes.push(box);
 			if (codeElement) codeEles.push(codeElement);
 		});
-		// const boxes = Array.from(existCodes) // 修复：将 Set 转为数组
-		// 	.map((k) => {
-		// 		const obj = webCodes.get(k);
-		// 		return {
-		// 			box: obj?.box,
-		// 		};
-		// 	})
-		// 	.filter(Boolean);
 		if (boxes.length === 0) {
-			// 修复：检查数组长度而不是布尔值
 			$logger.warn("没有找到作品元素");
 			return;
 		}
 		$logger.debug("exist boxes: ", boxes);
 
-		webHelper.highlightExisted(boxes);
-		highlightedAVs.value = new Set(boxes);
+		webHelper.addExisted(boxes);
 
 		if (codeEles.length === 0) {
-			// 修复：检查数组长度而不是布尔值
 			$logger.warn("没有找到番号元素");
 			return;
 		}
@@ -184,7 +228,98 @@ const filter = async function () {
 
 const recover = function () {
 	const webHelpter = filterHelper.getCurrentPageHelper();
-	webHelpter.unHightExisted(Array.from(highlightedAVs.value));
+	webHelpter.unHighlight(highlightedAVs.value);
+	highlightedAVs.value.clear();
+};
+
+const batchOpenLink = async function (delay = 1500, maxTab = 5) {
+	const webHelper = filterHelper.getCurrentPageHelper();
+
+	// 获取要处理的 boxes
+	let boxes = webHelper.getHighlighted();
+	if (!boxes?.size) {
+		boxes = new Set(avBoxes.value);
+	}
+
+	const finalBoxes = Array.from(boxes).filter(Boolean);
+
+	if (finalBoxes.length === 0) {
+		$logger.log("未找到任何可点击的链接");
+		$notification.info({
+			title: "提示",
+			content: "未找到任何可点击的链接",
+		});
+		return;
+	}
+
+	// 提取链接的优化版本
+	const links = new Set();
+	finalBoxes.forEach((box) => {
+		let href;
+		if (box.tagName.toLowerCase() === "a" && box.hasAttribute("href")) {
+			href = box.href;
+		} else {
+			const link = box.querySelector("a[href]");
+			href = link?.href;
+		}
+
+		// 验证链接有效性
+		if (href && isValidUrl(href)) {
+			links.add(href);
+		}
+	});
+
+	if (links.size === 0) {
+		$logger.warn("未提取到有效链接");
+		return;
+	}
+
+	// 检查是否有重复链接
+	const isDisjoint = openedBox.isDisjointFrom(links);
+
+	const add2OpenedBox = function (link) {
+		openedBox.add(link);
+	};
+
+	if (!isDisjoint) {
+		const newLinks = links.difference(openedBox);
+
+		dialog.warning({
+			title: "发现重复链接",
+			content: `找到 ${links.size} 个链接，其中 ${newLinks.size} 个未打开过。是否打开所有链接（包括已打开过的）？`,
+			positiveText: "打开所有",
+			negativeText: "仅打开新的",
+			neutralText: "取消",
+			draggable: true,
+			onPositiveClick: () => {
+				_doBatchOpenTab(Array.from(links), { success: add2OpenedBox });
+			},
+			onNegativeClick: () => {
+				if (newLinks.size > 0) {
+					_doBatchOpenTab(Array.from(links), {
+						success: add2OpenedBox,
+					});
+				} else {
+					$notification.info({
+						title: "提示",
+						content: "没有新的链接可打开",
+					});
+				}
+			},
+		});
+	} else {
+		_doBatchOpenTab(Array.from(links), { success: add2OpenedBox });
+	}
+};
+
+const _doBatchOpenTab = async function (links, options = {}) {
+	const { delay = 1500, maxTab = 5, success, failed } = options;
+	const ret = await batchOpenTab(links, delay, maxTab, {
+		success,
+		failed,
+	});
+
+	return ret;
 };
 </script>
 
@@ -192,7 +327,9 @@ const recover = function () {
 	<setting-modal
 		v-model:show="settingModalShow"
 		v-model:model-value="globalStore.$state.settings"></setting-modal>
-	<float-menu @open-setting="handleOpenSetting"></float-menu>
+	<float-menu
+		@open-setting="handleOpenSetting"
+		@batch-open-link="batchOpenLink"></float-menu>
 </template>
 
 <style lang="less"></style>

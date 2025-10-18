@@ -2,9 +2,10 @@ import { HTML_ATTRI, ICONS, DEFAULT_CSS_VAR_PREFIX } from "../../comm/constant";
 import logger from "../../lib/Logger";
 import getcode from "../../utils/getCode";
 
-const { AV_OUTLINE, AV_OUTLINE_PRIORITY, AV_CODE, NODE_PROCESSED } =
+const { AV_OUTLINE, AV_OUTLINE_PRIORITY, AV_CODE, AV_NODE_PROCESSED } =
 	HTML_ATTRI.data;
-const { AV_EXISTED, AV_BOX, AV_LINK, JELLYFIN_ICON } = HTML_ATTRI.className;
+const { AV_EXISTED, AV_BOX, AV_LINK, JELLYFIN_ICON, AV_BOX_HIGHLIGHT } =
+	HTML_ATTRI.className;
 
 class BaseWebHelper {
 	#highlighted = new Set();
@@ -85,7 +86,6 @@ class BaseWebHelper {
 	/**
 	 * 在页面中查找作品代码
 	 * 使用实例初始化时配置的选择器进行查找
-	 *
 	 * @returns {Map<string, {code: string, box: HTMLElement, codeElement: HTMLElement, type: string}>}
 	 *          代码映射表，键为标准化后的作品代码，值为包含详细信息的对象
 	 * @example
@@ -195,7 +195,7 @@ class BaseWebHelper {
 	}
 
 	#processBoxElement(box) {
-		if (!box || box.getAttribute(NODE_PROCESSED)) return;
+		if (!box || box.getAttribute(AV_NODE_PROCESSED)) return;
 
 		box.classList.add(AV_BOX);
 		box.setAttribute(AV_OUTLINE, box.style.outline);
@@ -203,7 +203,7 @@ class BaseWebHelper {
 			AV_OUTLINE_PRIORITY,
 			box.style.getPropertyPriority("outline")
 		);
-		box.setAttribute(NODE_PROCESSED, "true");
+		box.setAttribute(AV_NODE_PROCESSED, "true");
 	}
 
 	/**
@@ -213,7 +213,7 @@ class BaseWebHelper {
 	 * @returns
 	 */
 	#processCodeElement(element, code) {
-		if (!element || element.getAttribute(NODE_PROCESSED)) return;
+		if (!element || element.getAttribute(AV_NODE_PROCESSED)) return;
 
 		const link = this.#codeLink.cloneNode(false);
 		link.setAttribute(AV_CODE, code);
@@ -221,7 +221,7 @@ class BaseWebHelper {
 		link.appendChild(this.#jellyfinIcon.cloneNode(true));
 
 		element.firstChild.replaceWith(link);
-		element.setAttribute(NODE_PROCESSED, "true");
+		element.setAttribute(AV_NODE_PROCESSED, "true");
 	}
 
 	// 磁力链接相关方法
@@ -248,29 +248,43 @@ class BaseWebHelper {
 		return this.findMagnetLinks(box);
 	}
 
-	// 高亮相关方法
-	highlightExisted(boxes) {
-		boxes.forEach((box) => {
+	highlight(boxes) {
+		Array.from(boxes).forEach((box) => {
+			if (box?.classList) {
+				box.classList.add(AV_BOX_HIGHLIGHT);
+				this.#highlighted.add(box);
+			}
+		});
+	}
+
+	unHighlight(boxes = null) {
+		const finalBoxes = boxes || this.#highlighted;
+		Array.from(finalBoxes).forEach((box) => {
+			box?.classList.remove(AV_BOX_HIGHLIGHT);
+			this.#highlighted.delete(box);
+		});
+	}
+
+	addExisted(boxes) {
+		Array.from(boxes).forEach((box) => {
 			if (box?.classList) {
 				box.classList.add(AV_EXISTED);
-				this.#highlighted.add(box);
 			}
 		});
 		return this;
 	}
 
-	unhighlightExisted(boxes) {
+	clearExisted(boxes) {
 		boxes.forEach((box) => {
 			if (box?.classList) {
 				box.classList.remove(AV_EXISTED);
-				this.#highlighted.delete(box);
 			}
 		});
 		return this;
 	}
 
 	clearAllHighlights() {
-		this.unhighlightExisted([...this.#highlighted]);
+		this.unHighlight([...this.#highlighted]);
 		return this;
 	}
 

@@ -27,7 +27,7 @@ export const useGlobalStore = defineStore("global", {
 		settings: { ...defaultSettings },
 		/** @type {WebState} */
 		web: {
-			loctionHref: "",
+			host: "",
 			codes: new Set(),
 			boxes: new Map(),
 		},
@@ -322,6 +322,10 @@ export const useGlobalStore = defineStore("global", {
 
 		delWebBox(code) {
 			this.web.boxes.delete(code);
+		},
+
+		updateWebHost(newHost) {
+			if (newHost) this.web.host = newHost;
 		},
 	},
 });

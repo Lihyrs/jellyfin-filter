@@ -67,6 +67,12 @@ class FilterHelper {
 		return this.#webHelper || this.getWebHelper(window.location.href);
 	}
 
+	findCurrentPageCodes() {
+		return (
+			this.#webHelper || this.getWebHelper(window.location.href)
+		)?.findCode();
+	}
+
 	/**
 	 * 获取所有支持的站点名称
 	 * @returns {string[]} 站点名称数组

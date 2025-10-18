@@ -6,9 +6,16 @@ $jf-icon-height: $jf-icon-width;
 $jf-icon-min-height: $jf-icon-min-width;
 $jf-icon-max-height: $jf-icon-max-width;
 
+.jf-av-hidden {
+	display: none !important;
+}
+
 .jf-av-box {
-	// 默认状态 - 隐藏图标
-	outline: var(--jf-av-outline) !important;
+	outline: 0;
+	&.jf-av-highlight {
+		outline: var(--jf-av-outline) !important;
+	}
+
 	&:not(.jf-av-existed) {
 		.jf-av-link {
 			.jf-av-jf-icon {
@@ -40,7 +47,6 @@ $jf-icon-max-height: $jf-icon-max-width;
 
 	// 存在状态 - 显示图标
 	&.jf-av-existed {
-		outline: unset !important;
 		.jf-av-link {
 			.jf-av-jf-icon {
 				display: inline-block !important;

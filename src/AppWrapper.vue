@@ -1,11 +1,11 @@
 <!-- AppWrapper.vue -->
 <script setup>
-import { NNotificationProvider } from "naive-ui";
+import { NNotificationProvider, NDialogProvider } from "naive-ui";
 import App from "./App.vue";
 </script>
 
 <template>
 	<n-notification-provider>
-		<App />
+		<n-dialog-provider><App /></n-dialog-provider>
 	</n-notification-provider>
 </template>
