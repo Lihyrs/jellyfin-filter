@@ -38,6 +38,9 @@ const settingModalShow = ref(!true);
 const highlightedAVs = ref(new Set());
 const curBoxSelector = ref("");
 const curCodeSelector = ref("");
+const collectAVs = ref(new Set());
+const isCollectAVsHidden = ref(false);
+const keyEventHandler = new Set();
 
 const openedBox = new Set();
 
@@ -110,12 +113,19 @@ onMounted(() => {
 		curBoxSelector.value = webHelper.boxSelector;
 		curCodeSelector.value = webHelper.codeSelector;
 	}
-	keysEvent.on(FETCH_AVS_HOT_KEY.key, getItemsFromJellyfin);
-	keysEvent.on(FILTER_AV_HOT_KEY.key, filter);
-	keysEvent.on(RECOVER_HOT_KEY.key, recover);
+	const fetchH = keysEvent.on(FETCH_AVS_HOT_KEY.key, getItemsFromJellyfin);
+	const filterH = keysEvent.on(FILTER_AV_HOT_KEY.key, filter);
+	const recoverH = keysEvent.on(RECOVER_HOT_KEY.key, recover);
+	keyEventHandler.add(fetchH);
+	keyEventHandler.add(filterH);
+	keyEventHandler.add(recoverH);
 });
 
-onUnmounted(() => {});
+onUnmounted(() => {
+	keyEventHandler.values.forEach((h) => {
+		if (h) keysEvent.off(h);
+	});
+});
 
 // 监听 emphasisOutlineStyle 变化
 watch(emphasisOutlineStyle, (newValue, oldValue) => {
@@ -166,9 +176,23 @@ const findCurrentPageCodes = function () {
 		globalStore.updateWebCodes(
 			new Set([...globalStore.web.codes, ...webCodes.keys()])
 		);
+
+		findCollectAV();
 	}
 
 	return webCodes || null;
+};
+
+const findCollectAV = function () {
+	const codePrefixes = globalStore.settings.collectionCodePrefixes.split(",");
+	if (codePrefixes.length == 0) return;
+	const reg = new RegExp(`^[${codePrefixes.join("|")}]`, "i");
+	const codes = Array.from(globalStore.web.codes);
+	codes.forEach((code) => {
+		if (reg.test(code)) {
+			collectAVs.value.add(code);
+		}
+	});
 };
 
 const filter = async function () {
@@ -227,8 +251,8 @@ const filter = async function () {
 };
 
 const recover = function () {
-	const webHelpter = filterHelper.getCurrentPageHelper();
-	webHelpter.unHighlight(highlightedAVs.value);
+	const webHelper = filterHelper.getCurrentPageHelper();
+	webHelper.unHighlight(highlightedAVs.value);
 	highlightedAVs.value.clear();
 };
 
@@ -321,6 +345,24 @@ const _doBatchOpenTab = async function (links, options = {}) {
 
 	return ret;
 };
+
+const handleToggleColle = function () {
+	const webHelper = filterHelper.getCurrentPageHelper();
+	const finalBoxes = Array.from(collectAVs.value.values());
+	if (finalBoxes.length === 0) {
+		dialog.warning({
+			content: "没有合集番号前缀",
+		});
+		return;
+	}
+	if (isCollectAVsHidden.value) {
+		webHelper.showElements(finalBoxes);
+		isCollectAVsHidden.value = false;
+	} else {
+		webHelper.hideElements(finalBoxes);
+		isCollectAVsHidden.value = true;
+	}
+};
 </script>
 
 <template>
@@ -329,7 +371,8 @@ const _doBatchOpenTab = async function (links, options = {}) {
 		v-model:model-value="globalStore.$state.settings"></setting-modal>
 	<float-menu
 		@open-setting="handleOpenSetting"
-		@batch-open-link="batchOpenLink"></float-menu>
+		@batch-open-link="batchOpenLink"
+		@toggle-colle="handleToggleColle"></float-menu>
 </template>
 
 <style lang="less"></style>

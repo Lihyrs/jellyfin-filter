@@ -55,6 +55,7 @@ export default defineConfig(async () => {
 						["vue", cdn.jsdelivr("Vue", "dist/vue.global.prod.js")],
 						["pinia", cdn.jsdelivr("Pinia", "dist/pinia.iife.js")],
 						["naive-ui", cdn.jsdelivr("naive", "dist/index.js")],
+                        ["loglevel", cdn.jsdelivr("log", "dist/loglevel.min.js")],
 					],
 					// 配置外部资源（CSS）
 					externalResource: {
@@ -107,7 +108,7 @@ export default defineConfig(async () => {
 		},
 		build: {
 			rollupOptions: {
-				external: ["vue", "pinia", "naive-ui"],
+				// external: ["vue", "pinia", "naive-ui"],
 			},
 		},
 	};

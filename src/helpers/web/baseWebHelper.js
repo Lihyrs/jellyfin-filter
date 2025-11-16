@@ -4,8 +4,14 @@ import getcode from "../../utils/getCode";
 
 const { AV_OUTLINE, AV_OUTLINE_PRIORITY, AV_CODE, AV_NODE_PROCESSED } =
 	HTML_ATTRI.data;
-const { AV_EXISTED, AV_BOX, AV_LINK, JELLYFIN_ICON, AV_BOX_HIGHLIGHT } =
-	HTML_ATTRI.className;
+const {
+	AV_EXISTED,
+	AV_BOX,
+	AV_LINK,
+	JELLYFIN_ICON,
+	AV_BOX_HIGHLIGHT,
+	AV_BOX_HIDDEN,
+} = HTML_ATTRI.className;
 
 class BaseWebHelper {
 	#highlighted = new Set();
@@ -262,6 +268,18 @@ class BaseWebHelper {
 		Array.from(finalBoxes).forEach((box) => {
 			box?.classList.remove(AV_BOX_HIGHLIGHT);
 			this.#highlighted.delete(box);
+		});
+	}
+
+	hideElements(boxes = null) {
+		Array.from(boxes).forEach((box) => {
+			box?.classList.add(AV_BOX_HIDDEN);
+		});
+	}
+
+	showElements(boxes = null) {
+		Array.from(boxes).forEach((box) => {
+			box?.classList.remove(AV_BOX_HIDDEN);
 		});
 	}
 
