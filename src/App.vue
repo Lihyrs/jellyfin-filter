@@ -44,9 +44,9 @@ const curCodeSelector = ref("");
 const collectAVs = ref(new Set());
 const isCollectAVsHidden = ref(false);
 const keyEventHandler = new Set();
-const isFilterMagnetFile = ref(false);
+const isFilterMagnetFile = ref(globalStore.settings.filterMagnetFiles);
 
-const magnets = {};
+let magnets = {};
 const filterMagnets = new Set();
 
 const openedBox = new Set();
@@ -133,6 +133,12 @@ onMounted(() => {
 	keyEventHandler.add(fetchH);
 	keyEventHandler.add(filterH);
 	keyEventHandler.add(recoverH);
+
+	setTimeout(() => {
+		if (isFilterMagnetFile.value) {
+			handleFilterMagnetFile(true);
+		}
+	}, 500);
 });
 
 onUnmounted(() => {
@@ -403,15 +409,16 @@ const handleFilterMagnetFile = function (newValue) {
 	}
 	if (magnetLinks.magnets.length === 0) return;
 	magnets = magnetLinks;
+	logger.debug("magnets: ", magnets);
 	filterMagnets.clear();
 	magnetLinks.magnets.forEach((magnet) => {
-		if (magnet.sizeInBytes < FILE_SIZE) {
+		if (magnet.sizeInBytes < globalStore.settings.filterMagnetFileSize) {
 			filterMagnets.add(magnet.boxElement);
 		}
 	});
-
+	logger.debug("filterMagnets: ", filterMagnets);
 	if (filterMagnets.size === 0) return;
-	if (isFilterMagnetFile.value == newValue) return;
+	// if (isFilterMagnetFile.value == newValue) return;
 	if (!newValue) {
 		webHelper.showElements(Array.from(filterMagnets));
 		isFilterMagnetFile.value = false;

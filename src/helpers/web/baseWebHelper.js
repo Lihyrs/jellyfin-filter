@@ -3,6 +3,7 @@ import {
 	ICONS,
 	DEFAULT_CSS_VAR_PREFIX,
 	FILE_SIZE_REG_EXP,
+	UNITS,
 } from "../../comm/constant";
 import logger from "../../lib/Logger";
 import getCode from "../../utils/getCode";
@@ -316,7 +317,7 @@ class BaseWebHelper {
 
 		const numericValue = parseFloat(match[1]);
 		const unit = match[2].toUpperCase();
-		const sizeInBytes = convertToBytes(numericValue, unit);
+		const sizeInBytes = convertToBytes(numericValue, UNITS[unit]);
 
 		return {
 			size: text, // 保留原始尺寸文本

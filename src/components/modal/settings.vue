@@ -51,17 +51,15 @@
 							:show-feedback="false"
 							v-if="key === 'filterMagnetFileSize'"
 							:label="key">
-							<n-input-group>
-								<n-input
-									type="number"
-									:value="getFileSizeInGB(localSettings[key])"
-									@update:value="handleFileSizeUpdate"
-									:min="0"
-									:step="0.1"
-									placeholder="输入文件大小(GB)">
-									<template #suffix>GB</template>
-								</n-input>
-							</n-input-group>
+							<n-input
+								type="number"
+								v-model:value="filterMagnetFileSizeGB"
+								@update:value="handleFileSizeUpdate"
+								:min="0"
+								:step="0.1"
+								placeholder="输入文件大小(GB)">
+								<template #suffix>GB</template>
+							</n-input>
 						</n-form-item>
 						<n-form-item
 							class="setting-item"
@@ -81,26 +79,6 @@
 						</n-form-item>
 					</n-gi>
 				</n-grid>
-				<!-- <n-grid class="setting-group" :cols="2" :x-gap="24">
-					<n-gi v-for="(value, key) in html" :key="key">
-						<n-form-item
-							class="setting-item"
-							:show-feedback="false"
-							v-if="typeof value === 'boolean'"
-							:label="key">
-							<n-switch v-model:value="localSettings[key]" />
-						</n-form-item>
-						<n-form-item
-							class="setting-item"
-							:show-feedback="false"
-							v-else-if="typeof value === 'string'"
-							:label="key">
-							<n-input
-								type="text"
-								v-model:value="localSettings[key]"></n-input>
-						</n-form-item>
-					</n-gi>
-				</n-grid> -->
 
 				<n-grid class="setting-group" :cols="2" :x-gap="24">
 					<n-gi v-for="(value, key) in other" :key="key">
@@ -161,7 +139,7 @@
 	</n-modal>
 </template>
 
-<script>
+<script setup>
 import {
 	NForm,
 	NModal,
@@ -185,97 +163,68 @@ import {
 import { convertToGB, convertToBytes } from "../../utils/convert";
 import { UNITS } from "../../comm/constant";
 
-export default {
-	props: {
-		settings: {
-			type: Object,
-			required: true,
-		},
-		show: {
-			type: Boolean,
-			default: false,
-		},
+// Props
+const props = defineProps({
+	settings: {
+		type: Object,
+		required: true,
 	},
-	emits: ["update:show", "submit", "cancel"],
-	setup(props, { emit }) {
-		// 根据 props.settings 初始化本地状态
-		const localSettings = ref({ ...defaultSettings, ...props.settings });
-
-		// 监听外部 settings 的变化，更新本地状态
-		watch(
-			() => props.settings,
-			(newValue) => {
-				localSettings.value = { ...newValue };
-			}
-		);
-
-		// 监听 show prop 的变化
-		const showModal = ref(props.show);
-		watch(
-			() => props.show,
-			(newValue) => {
-				showModal.value = newValue;
-			}
-		);
-
-		// 监听内部 showModal 的变化并通知父组件
-		watch(showModal, (newValue) => {
-			emit("update:show", newValue);
-		});
-		const getFileSizeInGB = (bytes) => {
-			if (!bytes) return 0;
-			return convertToGB(bytes);
-		};
-		const handleFileSizeUpdate = (gbValue) => {
-			if (gbValue === null || gbValue === undefined || gbValue === "") {
-				localSettings.value.filterMagnetFileSize = 0;
-				return;
-			}
-			const bytes = convertToBytes(gbValue, UNITS.GB);
-			localSettings.value.filterMagnetFileSize = bytes;
-		};
-
-		const handleSubmit = () => {
-			// 提交时发射本地状态的值
-			emit("submit", { ...localSettings.value });
-			showModal.value = false;
-		};
-
-		const hide = () => {
-			showModal.value = false;
-			emit("cancel");
-		};
-
-		const show = () => {
-			showModal.value = true;
-		};
-
-		return {
-			localSettings, // 使用本地状态
-			showModal,
-			filterSwitch,
-			other,
-			jellyfin,
-			html,
-			hotkeys: { ...hotkeys },
-			handleSubmit,
-			hide,
-			show,
-			getFileSizeInGB,
-			handleFileSizeUpdate,
-		};
+	show: {
+		type: Boolean,
+		default: false,
 	},
-	components: {
-		NForm,
-		NModal,
-		NButton,
-		NSwitch,
-		NFormItem,
-		NInput,
-		NCard,
-		NGi,
-		NGrid,
-	},
+});
+
+// Emits
+const emit = defineEmits(["update:show", "submit", "cancel"]);
+
+// 根据 props.settings 初始化本地状态
+const localSettings = ref({ ...defaultSettings, ...props.settings });
+const filterMagnetFileSizeGB = ref(
+	convertToGB(localSettings.value.filterMagnetFileSize)
+);
+
+// 监听 show prop 的变化
+const showModal = ref(props.show);
+watch(
+	() => props.show,
+	(newValue) => {
+		showModal.value = newValue;
+	}
+);
+
+// 监听内部 showModal 的变化并通知父组件
+watch(showModal, (newValue) => {
+	emit("update:show", newValue);
+});
+
+const handleFileSizeUpdate = (gbValue) => {
+	if (gbValue === null || gbValue === undefined || gbValue === "") {
+		filterMagnetFileSizeGB.value = 0;
+		localSettings.value.filterMagnetFileSize = 0;
+		return;
+	}
+	const bytes = convertToBytes(gbValue, UNITS.GB);
+	filterMagnetFileSizeGB.value = gbValue; // 保持GB值不变
+	localSettings.value.filterMagnetFileSize = bytes;
+};
+
+const handleSubmit = () => {
+	if (filterMagnetFileSizeGB.value !== undefined) {
+		const bytes = convertToBytes(filterMagnetFileSizeGB.value, UNITS.GB);
+		localSettings.value.filterMagnetFileSize = bytes;
+	}
+	emit("submit", { ...localSettings.value });
+	showModal.value = false;
+};
+
+const hide = () => {
+	showModal.value = false;
+	emit("cancel");
+};
+
+const show = () => {
+	showModal.value = true;
 };
 </script>
 
