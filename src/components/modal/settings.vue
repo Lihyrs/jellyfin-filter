@@ -1,7 +1,7 @@
 <template>
 	<n-modal v-model:show="showModal" transform-origin="center">
 		<n-card title="设置" class="setting-card">
-			<n-form label-placement="left" :model="settings">
+			<n-form label-placement="left" :model="localSettings">
 				<n-grid class="setting-group" :cols="2" :x-gap="24">
 					<n-gi v-for="(value, key) in filterSwitch" :key="key">
 						<n-form-item
@@ -9,7 +9,7 @@
 							:show-feedback="false"
 							v-if="typeof value === 'boolean'"
 							:label="key">
-							<n-switch v-model:value="settings[key]" />
+							<n-switch v-model:value="localSettings[key]" />
 						</n-form-item>
 						<n-form-item
 							class="setting-item"
@@ -18,7 +18,7 @@
 							:label="key">
 							<n-input
 								type="text"
-								v-model:value="settings[key]"></n-input>
+								v-model:value="localSettings[key]"></n-input>
 						</n-form-item>
 					</n-gi>
 				</n-grid>
@@ -30,7 +30,7 @@
 							:show-feedback="false"
 							v-if="typeof value === 'boolean'"
 							:label="key">
-							<n-switch v-model:value="settings[key]" />
+							<n-switch v-model:value="localSettings[key]" />
 						</n-form-item>
 						<n-form-item
 							class="setting-item"
@@ -39,7 +39,7 @@
 							:label="key">
 							<n-input
 								type="text"
-								v-model:value="settings[key]"></n-input>
+								v-model:value="localSettings[key]"></n-input>
 						</n-form-item>
 					</n-gi>
 				</n-grid>
@@ -51,7 +51,7 @@
 							:show-feedback="false"
 							v-if="typeof value === 'boolean'"
 							:label="key">
-							<n-switch v-model:value="settings[key]" />
+							<n-switch v-model:value="localSettings[key]" />
 						</n-form-item>
 						<n-form-item
 							class="setting-item"
@@ -60,7 +60,7 @@
 							:label="key">
 							<n-input
 								type="text"
-								v-model:value="settings[key]"></n-input>
+								v-model:value="localSettings[key]"></n-input>
 						</n-form-item>
 					</n-gi>
 				</n-grid>
@@ -72,7 +72,7 @@
 							:show-feedback="false"
 							v-if="typeof value === 'boolean'"
 							:label="key">
-							<n-switch v-model:value="settings[key]" />
+							<n-switch v-model:value="localSettings[key]" />
 						</n-form-item>
 						<n-form-item
 							class="setting-item"
@@ -81,7 +81,7 @@
 							:label="key">
 							<n-input
 								type="text"
-								v-model:value="settings[key]"></n-input>
+								v-model:value="localSettings[key]"></n-input>
 						</n-form-item>
 					</n-gi>
 				</n-grid>
@@ -93,7 +93,7 @@
 							:show-feedback="false"
 							v-if="typeof value === 'boolean'"
 							:label="key">
-							<n-switch v-model:value="settings[key]" />
+							<n-switch v-model:value="localSettings[key]" />
 						</n-form-item>
 						<n-form-item
 							class="setting-item"
@@ -102,7 +102,7 @@
 							:label="key">
 							<n-input
 								type="text"
-								v-model:value="settings[key]"></n-input>
+								v-model:value="localSettings[key]"></n-input>
 						</n-form-item>
 					</n-gi>
 				</n-grid>
@@ -148,7 +148,7 @@ import {
 
 export default {
 	props: {
-		modelValue: {
+		settings: {
 			type: Object,
 			required: true,
 		},
@@ -157,25 +157,17 @@ export default {
 			default: false,
 		},
 	},
-	emits: ["update:modelValue", "update:show", "submit", "cancel"],
+	emits: ["update:show", "submit", "cancel"],
 	setup(props, { emit }) {
-		const settings = ref({ ...defaultSettings, ...props.modelValue });
+		// 根据 props.settings 初始化本地状态
+		const localSettings = ref({ ...defaultSettings, ...props.settings });
 
-		// 监听外部 modelValue 的变化
+		// 监听外部 settings 的变化，更新本地状态
 		watch(
-			() => props.modelValue,
+			() => props.settings,
 			(newValue) => {
-				settings.value = { ...newValue };
+				localSettings.value = { ...newValue };
 			}
-		);
-
-		// 监听内部 settings 的变化并通知父组件
-		watch(
-			settings,
-			(newValue) => {
-				emit("update:modelValue", { ...newValue });
-			},
-			{ deep: true }
 		);
 
 		// 监听 show prop 的变化
@@ -193,7 +185,8 @@ export default {
 		});
 
 		const handleSubmit = () => {
-			emit("submit", settings.value);
+			// 提交时发射本地状态的值
+			emit("submit", { ...localSettings.value });
 			showModal.value = false;
 		};
 
@@ -207,7 +200,7 @@ export default {
 		};
 
 		return {
-			settings,
+			localSettings, // 使用本地状态
 			showModal,
 			filterSwitch,
 			other,
@@ -255,10 +248,6 @@ export default {
 .setting-item {
 	margin: 5px 0;
 }
-/* .setting-item:deep():last-child {
-	display: flex;
-	justify-content: center;
-} */
 .sub-btn {
 	margin-right: 20px;
 }

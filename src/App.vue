@@ -18,7 +18,7 @@ import {
 } from "./comm/constant";
 import { useGlobalStore } from "./store/global";
 
-import SettingModal from "./components/modal/Setting.vue";
+import SettingModal from "./components/modal/Settings.vue";
 import floatMenu from "./views/floatMenu.vue";
 import Jellyfin from "./services/Jellyfin";
 import FilterHelper from "./helpers/filterHelper";
@@ -27,7 +27,6 @@ import KeysEvent from "./lib/KeysEvent";
 import { notificationManager as $notification } from "./lib/Notification";
 import isValidUrl from "./utils/isValidUrl";
 import { batchOpenTab } from "./utils/batchOpenTab";
-import logger from "./lib/Logger";
 // import logger from "./lib/Logger";
 // import logger from "loglevel";
 
@@ -49,6 +48,7 @@ const dialog = useDialog();
 let webHelper = null;
 
 const $logger = inject("$logger");
+$logger.setLevel(globalStore.settings.debug ? "debug" : "info");
 
 // 在 setup 中获取通知实例
 const notification = useNotification();
@@ -214,7 +214,7 @@ const filter = async function () {
 			if (box) webBoxes.push(box);
 			webCodeSet.add(k);
 		});
-		logger.debug("web--->:", webCodes, webBoxes, webCodeSet);
+		$logger.debug("web--->:", webCodes, webBoxes, webCodeSet);
 		webHelper.highlight(webBoxes);
 		highlightedAVs.value = new Set(webBoxes);
 		const existCodes = filterHelper.getExistCodes(webCodeSet, jfCodes);
@@ -351,6 +351,7 @@ const handleToggleColle = function () {
 	const finalBoxes = Array.from(collectAVs.value.values());
 	if (finalBoxes.length === 0) {
 		dialog.warning({
+			title: "警告",
 			content: "没有合集番号前缀",
 		});
 		return;
@@ -374,17 +375,20 @@ const registerMenuCommand = function () {
 const showSettingsModal = function () {
 	settingModalShow.value = true;
 };
+const handleSettingsSubmit = function (newSettings) {
+	$logger.setLevel(newSettings.debug ? "debug" : "info");
+	globalStore.updateSettings(newSettings);
+};
 </script>
 
 <template>
 	<setting-modal
 		v-model:show="settingModalShow"
-		v-model:model-value="globalStore.$state.settings"></setting-modal>
+		:settings="globalStore.settings"
+		@submit="handleSettingsSubmit"></setting-modal>
 	<float-menu
 		@open-setting="handleOpenSetting"
 		@batch-open-link="batchOpenLink"
 		@toggle-colle="handleToggleColle"
 		v-model:is-collection-hidden="isCollectAVsHidden"></float-menu>
 </template>
-
-<style lang="less"></style>

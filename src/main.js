@@ -8,8 +8,6 @@ import "./styles/style.scss";
 import AppWrapper from "./AppWrapper.vue";
 import logger from "./lib/Logger";
 
-logger.setLevel("debug");
-
 const pinia = createPinia();
 const app = createApp(AppWrapper);
 
