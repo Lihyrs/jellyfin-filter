@@ -43,14 +43,26 @@ import FixedFloatMenu from "../components/FixedFloatMenu.vue";
 import { ICONS } from "../comm/constant";
 
 // 状态管理
-const state = ref({
-	isCollectionHidden: false,
+// const state = ref({
+// 	isCollectionHidden: false,
+// });
+
+const props = defineProps({
+	isCollectionHidden: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 // 菜单方向状态
 const menuDirection = ref("bottom");
 
-const emit = defineEmits(["open-setting", "batch-open-link", "toggle-colle"]);
+const emit = defineEmits([
+	"open-setting",
+	"batch-open-link",
+	"toggle-colle",
+	"update:isCollectionHidden",
+]);
 
 // 菜单项处理函数
 const batchOpenLink = async () => {
@@ -58,11 +70,15 @@ const batchOpenLink = async () => {
 };
 
 const toggleCollection = () => {
+	// state.value.isCollectionHidden = !state.value.isCollectionHidden;
+	// 触发双向绑定更新
+	emit("update:isCollectionHidden", !props.isCollectionHidden);
+	// 同时触发原有事件（如果需要）
 	emit("toggle-colle");
 };
 
 const openSetting = () => {
-	state.value.isSettingsOpen = true;
+	// state.value.isSettingsOpen = true;
 	emit("open-setting");
 };
 
@@ -79,15 +95,14 @@ const menuItemsConfig = [
 	{
 		id: "toggle-collection",
 		tooltip: computed(
-			() =>
-				(state.value.isCollectionHidden ? "显示" : "隐藏") + "合集作品"
+			() => (props.isCollectionHidden ? "显示" : "隐藏") + "合集作品"
 		),
 		handler: toggleCollection,
 		icon: {
 			default: ICONS.showAVS,
 			active: ICONS.hideAVS,
 		},
-		stateKey: "isCollectionHidden",
+		// stateKey: "isCollectionHidden",
 	},
 	{
 		id: "settings",
@@ -134,7 +149,8 @@ const getIconSrc = (item) => {
 };
 
 const getItemState = (item) => {
-	return state.value[item.stateKey];
+	// 使用 props 中的值
+	return props[item.stateKey];
 };
 
 const getButtonType = (item) => {

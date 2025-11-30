@@ -204,6 +204,7 @@ class BaseWebHelper {
 		if (!box || box.getAttribute(AV_NODE_PROCESSED)) return;
 
 		box.classList.add(AV_BOX);
+		box.classList.add(AV_BOX_HIGHLIGHT);
 		box.setAttribute(AV_OUTLINE, box.style.outline);
 		box.setAttribute(
 			AV_OUTLINE_PRIORITY,

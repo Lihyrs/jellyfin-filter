@@ -116,6 +116,7 @@ onMounted(() => {
 	const fetchH = keysEvent.on(FETCH_AVS_HOT_KEY.key, getItemsFromJellyfin);
 	const filterH = keysEvent.on(FILTER_AV_HOT_KEY.key, filter);
 	const recoverH = keysEvent.on(RECOVER_HOT_KEY.key, recover);
+	registerMenuCommand();
 	keyEventHandler.add(fetchH);
 	keyEventHandler.add(filterH);
 	keyEventHandler.add(recoverH);
@@ -214,12 +215,12 @@ const filter = async function () {
 			webCodeSet.add(k);
 		});
 		logger.debug("web--->:", webCodes, webBoxes, webCodeSet);
+		webHelper.highlight(webBoxes);
+		highlightedAVs.value = new Set(webBoxes);
 		const existCodes = filterHelper.getExistCodes(webCodeSet, jfCodes);
 		$logger.debug("check exist:", jfCodes, "--", existCodes);
 		if (existCodes.size === 0) {
 			$logger.debug("not exist-->", webBoxes);
-			webHelper.highlight(webBoxes);
-			highlightedAVs.value = new Set(webBoxes);
 			return;
 		}
 
@@ -236,7 +237,6 @@ const filter = async function () {
 			return;
 		}
 		$logger.debug("exist boxes: ", boxes);
-
 		webHelper.addExisted(boxes);
 
 		if (codeEles.length === 0) {
@@ -363,6 +363,17 @@ const handleToggleColle = function () {
 		isCollectAVsHidden.value = true;
 	}
 };
+
+const registerMenuCommand = function () {
+	const events = [["设置", showSettingsModal]];
+	events.forEach(([title, cb]) =>
+		GM_registerMenuCommand(title, () => cb(title))
+	);
+	// GM_registerMenuCommand(title, () => cb(title));
+};
+const showSettingsModal = function () {
+	settingModalShow.value = true;
+};
 </script>
 
 <template>
@@ -372,7 +383,8 @@ const handleToggleColle = function () {
 	<float-menu
 		@open-setting="handleOpenSetting"
 		@batch-open-link="batchOpenLink"
-		@toggle-colle="handleToggleColle"></float-menu>
+		@toggle-colle="handleToggleColle"
+		v-model:is-collection-hidden="isCollectAVsHidden"></float-menu>
 </template>
 
 <style lang="less"></style>

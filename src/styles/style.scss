@@ -12,10 +12,13 @@ $jf-icon-max-height: $jf-icon-max-width;
 
 .jf-av-box {
 	outline: 0;
-	&.jf-av-highlight {
+
+	// 只有当元素同时有 jf-av-highlight 和 jf-av-existed 时才显示 outline
+	&.jf-av-highlight.jf-av-existed {
 		outline: var(--jf-av-outline) !important;
 	}
 
+	// 当没有 jf-av-existed 类时，隐藏图标
 	&:not(.jf-av-existed) {
 		.jf-av-link {
 			.jf-av-jf-icon {
@@ -32,7 +35,7 @@ $jf-icon-max-height: $jf-icon-max-width;
 		max-width: 100%;
 		overflow: auto;
 		.jf-av-jf-icon {
-			margin: 0 2px;
+			margin: 0 2px !important;
 			width: $jf-icon-width;
 			max-width: $jf-icon-max-width;
 			min-width: $jf-icon-min-width;
@@ -49,6 +52,7 @@ $jf-icon-max-height: $jf-icon-max-width;
 	&.jf-av-existed {
 		.jf-av-link {
 			.jf-av-jf-icon {
+				position: static !important;
 				display: inline-block !important;
 			}
 		}
