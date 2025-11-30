@@ -43,8 +43,45 @@
 						</n-form-item>
 					</n-gi>
 				</n-grid>
-
 				<n-grid class="setting-group" :cols="2" :x-gap="24">
+					<n-gi v-for="(value, key) in html" :key="key">
+						<!-- 特殊处理 filterMagnetFileSize -->
+						<n-form-item
+							class="setting-item"
+							:show-feedback="false"
+							v-if="key === 'filterMagnetFileSize'"
+							:label="key">
+							<n-input-group>
+								<n-input
+									type="number"
+									:value="getFileSizeInGB(localSettings[key])"
+									@update:value="handleFileSizeUpdate"
+									:min="0"
+									:step="0.1"
+									placeholder="输入文件大小(GB)">
+									<template #suffix>GB</template>
+								</n-input>
+							</n-input-group>
+						</n-form-item>
+						<n-form-item
+							class="setting-item"
+							:show-feedback="false"
+							v-else-if="typeof value === 'boolean'"
+							:label="key">
+							<n-switch v-model:value="localSettings[key]" />
+						</n-form-item>
+						<n-form-item
+							class="setting-item"
+							:show-feedback="false"
+							v-else-if="typeof value === 'string'"
+							:label="key">
+							<n-input
+								type="text"
+								v-model:value="localSettings[key]"></n-input>
+						</n-form-item>
+					</n-gi>
+				</n-grid>
+				<!-- <n-grid class="setting-group" :cols="2" :x-gap="24">
 					<n-gi v-for="(value, key) in html" :key="key">
 						<n-form-item
 							class="setting-item"
@@ -63,7 +100,7 @@
 								v-model:value="localSettings[key]"></n-input>
 						</n-form-item>
 					</n-gi>
-				</n-grid>
+				</n-grid> -->
 
 				<n-grid class="setting-group" :cols="2" :x-gap="24">
 					<n-gi v-for="(value, key) in other" :key="key">
@@ -145,6 +182,8 @@ import {
 	other,
 	defaultSettings,
 } from "../../comm/defaultSettings";
+import { convertToGB, convertToBytes } from "../../utils/convert";
+import { UNITS } from "../../comm/constant";
 
 export default {
 	props: {
@@ -183,6 +222,18 @@ export default {
 		watch(showModal, (newValue) => {
 			emit("update:show", newValue);
 		});
+		const getFileSizeInGB = (bytes) => {
+			if (!bytes) return 0;
+			return convertToGB(bytes);
+		};
+		const handleFileSizeUpdate = (gbValue) => {
+			if (gbValue === null || gbValue === undefined || gbValue === "") {
+				localSettings.value.filterMagnetFileSize = 0;
+				return;
+			}
+			const bytes = convertToBytes(gbValue, UNITS.GB);
+			localSettings.value.filterMagnetFileSize = bytes;
+		};
 
 		const handleSubmit = () => {
 			// 提交时发射本地状态的值
@@ -210,6 +261,8 @@ export default {
 			handleSubmit,
 			hide,
 			show,
+			getFileSizeInGB,
+			handleFileSizeUpdate,
 		};
 	},
 	components: {

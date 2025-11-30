@@ -3,12 +3,12 @@ import { SITE_CONFIGS } from "../../comm/constant";
 
 class JinjierHelper extends BaseWebHelper {
 	constructor() {
-		const { boxSelector, codeSelector, magnetSelector, name } =
+		const { boxSelector, codeSelector, magnet, name } =
 			SITE_CONFIGS.JINJIER;
 		super({
 			boxSelector,
 			codeSelector,
-			magnetSelector,
+			magnet,
 		});
 		this.siteName = name;
 	}

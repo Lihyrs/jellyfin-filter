@@ -25,19 +25,19 @@ class NotificationManager {
 
 	notify(data, type = "info") {
 		const t = validTypes.includes(type) ? type : "info";
-		this._notify(data, t);
+		this._notify({ title: "Info", ...data }, t);
 	}
 
 	success(data) {
-		this._notify(data, "success");
+		this._notify({ title: "Success", ...data }, "success");
 	}
 
 	warn(data) {
-		this._notify(data, "warning");
+		this._notify({ title: "Warnning", ...data }, "warning");
 	}
 
 	error(data) {
-		this._notify(data, "error");
+		this._notify({ title: "Error", ...data }, "error");
 	}
 }
 

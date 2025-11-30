@@ -1,4 +1,4 @@
-import { HOT_KEYS } from "./constant";
+import { HOT_KEYS, FILE_SIZE } from "./constant";
 
 /**
  * Jellyfin 相关配置
@@ -15,8 +15,8 @@ import { HOT_KEYS } from "./constant";
 /**
  * HTML 相关配置
  * @typedef {Object} HtmlConfig
- * @property {boolean} labelEnable - 是否开启标签功能
- * @property {boolean} triggerOnload - 是否在页面加载完成后自动触发一次过滤
+ * @property {boolean} filterMagnetFiles - 是否开启过滤磁力文件功能
+ * @property {number} filterMagnetFileSize - 过滤磁力文件大小,单位字节(bytes)
  * @property {boolean} hideCollectionAV - 是否显示合集作品
  * @property {string} collectionCodePrefixes - 合集番号前缀
  * @property {string} openSite - 点击番号时的默认跳转链接
@@ -62,10 +62,12 @@ export const jellyfin = {
 };
 
 export const html = {
-	// 是否开启标签功能
-	labelEnable: true,
+	// 是否开启过滤磁力文件功能
+	filterMagnetFiles: true,
+	//单位GB
+	filterMagnetFileSize: FILE_SIZE,
 	// 若为true，则在页面加载完成后自动触发一次过滤
-	triggerOnload: false,
+	// triggerOnload: false,
 	// 是否显示合集作品
 	hideCollectionAV: false,
 	// 合集番号前缀，多个前缀用逗号

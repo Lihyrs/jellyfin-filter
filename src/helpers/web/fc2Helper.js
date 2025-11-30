@@ -4,12 +4,11 @@ import { SITE_CONFIGS } from "../../comm/constant";
 
 class Fc2Helper extends BaseWebHelper {
 	constructor() {
-		const { boxSelector, codeSelector, magnetSelector, name } =
-			SITE_CONFIGS.FC2;
+		const { boxSelector, codeSelector, magnet, name } = SITE_CONFIGS.FC2;
 		super({
 			boxSelector,
 			codeSelector,
-			magnetSelector,
+			magnet,
 		});
 		this.siteName = name;
 	}

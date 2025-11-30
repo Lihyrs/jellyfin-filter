@@ -1,6 +1,6 @@
 // filterHelper
 import { SITE_HELPERS } from "./web";
-import { SITE_CONFIGS } from "../comm/constant";
+import { SITE_CONFIGS, AV_CODE_REG_EXP } from "../comm/constant";
 import logger from "../lib/Logger";
 
 // const jellyfin = new Jellyfin
@@ -87,7 +87,25 @@ class FilterHelper {
 	 * @returns {boolean} 是否支持
 	 */
 	isUrlSupported(url) {
-		return this.detectSiteConfig(url) !== null;
+		if (!this.detectSiteConfig(url)) return false;
+		return this.extractCodeFromPath(url) !== null;
+	}
+	extractCodeFromPath(url) {
+		const path = new URL(url).pathname;
+
+		// 检查所有番号模式
+		for (const [type, regex] of Object.entries(AV_CODE_REG_EXP)) {
+			if (Array.isArray(regex)) {
+				for (const subRegex of regex) {
+					const match = path.match(subRegex);
+					if (match) return { type, code: match[0] };
+				}
+			} else {
+				const match = path.match(regex);
+				if (match) return { type, code: match[0] };
+			}
+		}
+		return null;
 	}
 }
 

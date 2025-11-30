@@ -5,12 +5,12 @@ import { HTML_ATTRI } from "../../comm/constant";
 
 class JavdbHelper extends BaseWebHelper {
 	constructor() {
-		const { boxSelector, codeSelector, magnetSelector, name } =
+		const { boxSelector, codeSelector, magnet, name } =
 			SITE_CONFIGS.JAVDB;
 		super({
 			boxSelector,
 			codeSelector,
-			magnetSelector,
+			magnet,
 		});
 		this.siteName = name;
 	}

@@ -7,20 +7,23 @@ export const SITE_NAMES = {
 	FC2: "fc2",
 };
 
-
 // 站点配置工厂函数
 const createSiteConfig = (
 	name,
 	boxSelector,
 	codeSelector,
 	urlReg,
-	magnetSelector = ""
+	magnetBoxSelector = "",
+	magnetPageReg = ""
 ) => ({
 	name,
 	boxSelector,
 	codeSelector,
-	magnetSelector,
 	urlReg,
+	magnet: {
+		selector: magnetBoxSelector,
+		pageReg: magnetPageReg,
+	},
 });
 
 // 站点配置
@@ -29,7 +32,9 @@ export const SITE_CONFIGS = {
 		SITE_NAMES.JAVBUS,
 		"a.movie-box",
 		"date",
-		/^https:\/\/(www\.)?([a-zA-Z0-9-]*?(bus|jav|javbus)[a-zA-Z0-9-]*?)\.[a-zA-Z]{2,}(?=\/?$|\/page\/\d+|\/search|\/genre|\/uncensored|\/star|\/label|\/director|\/studio|\/series)/i
+		/^https:\/\/(www\.)?([a-zA-Z0-9-]*?(bus|jav|javbus)[a-zA-Z0-9-]*?)\.[a-zA-Z]{2,}(?=\/?$|\/page\/\d+|\/search|\/genre|\/uncensored|\/star|\/label|\/director|\/studio|\/series|\/[^\/]+)/i,
+		"#magnet-table tr",
+		/\/[a-zA-Z]{2,}-\d+$/i
 	),
 
 	JAVLIBRARY: createSiteConfig(
@@ -37,6 +42,8 @@ export const SITE_CONFIGS = {
 		".video",
 		".id",
 		/^https:\/\/(www\.)?javdb\.com(?!\/v\/)/i
+		// magnetBoxSelector,
+		// magnetPageReg
 	),
 
 	JAVDB: createSiteConfig(
@@ -44,6 +51,8 @@ export const SITE_CONFIGS = {
 		".movie-list .item",
 		".video-title strong",
 		/^https:\/\/www\.javlibrary\.com\/cn(?!(\/tl_bestreviews\.php|\/publicgroups\.php|\/publictopic\.php))/i
+		// magnetBoxSelector,
+		// magnetPageReg
 	),
 
 	JINJIER: {
@@ -53,8 +62,9 @@ export const SITE_CONFIGS = {
 			const td = box.querySelector("td:nth-of-type(3)");
 			return td?.textContent?.split(" ")[0] || "";
 		},
-		magnetSelector: "",
 		urlReg: /^https:\/\/jinjier\.art\/sql.*/i,
+		// magnetBoxSelector,
+		// magnetPageReg,
 	},
 
 	FC2: {
@@ -72,8 +82,9 @@ export const SITE_CONFIGS = {
 			}
 			return code || "";
 		},
-		magnetSelector: "",
 		urlReg: /https:\/\/fc2ppvdb\.com/i,
+		// magnetBoxSelector,
+		// magnetPageReg,
 	},
 };
 

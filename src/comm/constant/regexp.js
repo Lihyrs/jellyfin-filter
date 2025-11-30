@@ -15,3 +15,5 @@ export const LINK_REG_EXP = {
 	magnet: /magnet:\?xt=urn:btih:(?:[\da-f]{40}|[2-7a-z]{32})/i,
 	ed2k: /ed2k:\/\/(?:\|.+)+\|\//i,
 };
+
+export const FILE_SIZE_REG_EXP = /^\s*(\d+(?:\.\d+)?)\s*([KMGTPE]?B)\s*$/i;

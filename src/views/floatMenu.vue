@@ -40,17 +40,21 @@
 import { NButton, NIcon, NTooltip } from "naive-ui";
 import { computed, defineEmits, ref } from "vue";
 import FixedFloatMenu from "../components/FixedFloatMenu.vue";
-import { ICONS } from "../comm/constant";
-
-// 状态管理
-// const state = ref({
-// 	isCollectionHidden: false,
-// });
+import { ICONS, FILE_SIZE } from "../comm/constant";
+import { convertToGB } from "../utils/convert";
 
 const props = defineProps({
 	isCollectionHidden: {
 		type: Boolean,
 		default: false,
+	},
+	isFilterMagnetFile: {
+		type: Boolean,
+		default: false,
+	},
+	filterFileSize: {
+		type: [Number | String],
+		default: convertToGB(FILE_SIZE),
 	},
 });
 
@@ -61,7 +65,9 @@ const emit = defineEmits([
 	"open-setting",
 	"batch-open-link",
 	"toggle-colle",
-	"update:isCollectionHidden",
+	// "update:isCollectionHidden",
+	// "update:isFilterMagnetFile",
+	"filter-magnet-file",
 ]);
 
 // 菜单项处理函数
@@ -72,14 +78,18 @@ const batchOpenLink = async () => {
 const toggleCollection = () => {
 	// state.value.isCollectionHidden = !state.value.isCollectionHidden;
 	// 触发双向绑定更新
-	emit("update:isCollectionHidden", !props.isCollectionHidden);
+	// emit("update:isCollectionHidden", !props.isCollectionHidden);
 	// 同时触发原有事件（如果需要）
-	emit("toggle-colle");
+	emit("toggle-colle", !props.isCollectionHidden);
 };
 
 const openSetting = () => {
 	// state.value.isSettingsOpen = true;
 	emit("open-setting");
+};
+
+const filteFile = () => {
+	emit("filter-magnet-file", !props.isFilterMagnetFile);
 };
 
 // 菜单项配置
@@ -102,7 +112,23 @@ const menuItemsConfig = [
 			default: ICONS.showAVS,
 			active: ICONS.hideAVS,
 		},
-		// stateKey: "isCollectionHidden",
+		stateKey: "isCollectionHidden",
+	},
+	{
+		id: "filter-filesize",
+		tooltip: computed(
+			() =>
+				(props.isFilterMagnetFile ? "显示" : "隐藏") +
+				"小于" +
+				convertToGB(props.filterFileSize) +
+				"GB的磁力"
+		),
+		handler: filteFile,
+		icon: {
+			default: ICONS.unfilterFile,
+			active: ICONS.filterFile,
+		},
+		stateKey: "isFilterMagnetFile",
 	},
 	{
 		id: "settings",

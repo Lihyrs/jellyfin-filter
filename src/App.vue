@@ -15,6 +15,7 @@ import {
 	FETCH_AVS_HOT_KEY,
 	GET_COLLECTION_HOT_KEY,
 	GLOBAL_STORE_KEY,
+	FILE_SIZE,
 } from "./comm/constant";
 import { useGlobalStore } from "./store/global";
 
@@ -27,6 +28,9 @@ import KeysEvent from "./lib/KeysEvent";
 import { notificationManager as $notification } from "./lib/Notification";
 import isValidUrl from "./utils/isValidUrl";
 import { batchOpenTab } from "./utils/batchOpenTab";
+import { convertToBytes, convertToGB } from "./utils/convert";
+import { UNITS } from "./comm/constant";
+import logger from "./lib/Logger";
 // import logger from "./lib/Logger";
 // import logger from "loglevel";
 
@@ -40,6 +44,10 @@ const curCodeSelector = ref("");
 const collectAVs = ref(new Set());
 const isCollectAVsHidden = ref(false);
 const keyEventHandler = new Set();
+const isFilterMagnetFile = ref(false);
+
+const magnets = {};
+const filterMagnets = new Set();
 
 const openedBox = new Set();
 
@@ -63,6 +71,11 @@ const filterHelper = new FilterHelper();
 const emphasisOutlineStyle = computed({
 	get: () => globalStore.settings.emphasisOutlineStyle,
 	set: (value) => globalStore.updateSetting("emphasisOutlineStyle", value),
+});
+
+const finalFiltrFileSize = computed({
+	get: () => globalStore.settings.filterMagnetFileSize,
+	set: (val) => globalStore.updateSetting("filterMagnetFileSize", val),
 });
 
 const avBoxes = computed({
@@ -379,6 +392,35 @@ const handleSettingsSubmit = function (newSettings) {
 	$logger.setLevel(newSettings.debug ? "debug" : "info");
 	globalStore.updateSettings(newSettings);
 };
+const handleFilterMagnetFile = function (newValue) {
+	const webHelper = filterHelper.getCurrentPageHelper();
+	const magnetLinks = webHelper.findMagnetLinks();
+	if (!magnetLinks) {
+		$notification.warn({
+			content: "该页面没有磁力链接",
+		});
+		return;
+	}
+	if (magnetLinks.magnets.length === 0) return;
+	magnets = magnetLinks;
+	filterMagnets.clear();
+	magnetLinks.magnets.forEach((magnet) => {
+		if (magnet.sizeInBytes < FILE_SIZE) {
+			filterMagnets.add(magnet.boxElement);
+		}
+	});
+
+	if (filterMagnets.size === 0) return;
+	if (isFilterMagnetFile.value == newValue) return;
+	if (!newValue) {
+		webHelper.showElements(Array.from(filterMagnets));
+		isFilterMagnetFile.value = false;
+	} else {
+		webHelper.hideElements(Array.from(filterMagnets));
+		isFilterMagnetFile.value = true;
+	}
+	// logger.debug("isFilterMagnetFile: ", isFilterMagnetFile.value);
+};
 </script>
 
 <template>
@@ -390,5 +432,8 @@ const handleSettingsSubmit = function (newSettings) {
 		@open-setting="handleOpenSetting"
 		@batch-open-link="batchOpenLink"
 		@toggle-colle="handleToggleColle"
-		v-model:is-collection-hidden="isCollectAVsHidden"></float-menu>
+		@filter-magnet-file="handleFilterMagnetFile"
+		:filter-file-size="finalFiltrFileSize"
+		:is-collection-hidden="isCollectAVsHidden"
+		:is-filter-magnet-file="isFilterMagnetFile"></float-menu>
 </template>

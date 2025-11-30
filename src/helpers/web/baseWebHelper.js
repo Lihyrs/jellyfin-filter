@@ -1,6 +1,12 @@
-import { HTML_ATTRI, ICONS, DEFAULT_CSS_VAR_PREFIX } from "../../comm/constant";
+import {
+	HTML_ATTRI,
+	ICONS,
+	DEFAULT_CSS_VAR_PREFIX,
+	FILE_SIZE_REG_EXP,
+} from "../../comm/constant";
 import logger from "../../lib/Logger";
-import getcode from "../../utils/getCode";
+import getCode from "../../utils/getCode";
+import { convertToBytes } from "../../utils/convert";
 
 const { AV_OUTLINE, AV_OUTLINE_PRIORITY, AV_CODE, AV_NODE_PROCESSED } =
 	HTML_ATTRI.data;
@@ -22,10 +28,10 @@ class BaseWebHelper {
 	// 配置属性 - 改为公有字段，提供更好的TS支持和简洁性
 	boxSelector;
 	codeSelector;
-	magnetSelector;
+	magnet;
 
 	constructor(
-		{ boxSelector, codeSelector, magnetSelector = "" },
+		{ boxSelector, codeSelector, magnet = {} },
 		cssVarPrefix = DEFAULT_CSS_VAR_PREFIX
 	) {
 		// 参数验证
@@ -35,7 +41,7 @@ class BaseWebHelper {
 
 		this.boxSelector = boxSelector.trim();
 		this.codeSelector = codeSelector;
-		this.magnetSelector = magnetSelector;
+		this.magnet = magnet;
 
 		if (cssVarPrefix && cssVarPrefix !== DEFAULT_CSS_VAR_PREFIX) {
 			this.#cssVarPrefix = cssVarPrefix.trim();
@@ -183,7 +189,7 @@ class BaseWebHelper {
 		const code = codeElement?.textContent?.trim();
 		if (!code) return null;
 
-		const parsed = getcode(code);
+		const parsed = getCode(code);
 		if (!parsed) return null;
 
 		const finalCode = parsed.code.toUpperCase();
@@ -231,24 +237,91 @@ class BaseWebHelper {
 		element.setAttribute(AV_NODE_PROCESSED, "true");
 	}
 
-	// 磁力链接相关方法
+	/**
+	 * 在指定容器中查找磁力链接
+	 * @param {Document|Element} [container=document] - 要搜索的DOM容器，默认为整个文档
+	 * @returns {Object|null} 返回磁力链接信息对象，如果未找到则返回null
+	 * @returns {string} return.code - 最后找到的番号代码
+	 * @returns {Array} return.magnets - 磁力链接数组
+	 * @returns {string} return.magnets[].href - 磁力链接URL
+	 * @returns {string} return.magnets[].code - 番号代码
+	 * @returns {string} return.magnets[].text - 链接文本内容
+	 * @returns {string} return.magnets[].size - 文件大小文本
+	 * @returns {number} return.magnets[].sizeInBytes - 文件大小（字节）
+	 * @returns {Element} return.magnets[].boxElement - 包含磁力链接的容器元素
+	 */
 	findMagnetLinks(container = document) {
-		if (!this.magnetSelector) {
+		// 前置条件检查
+		if (!this.magnet) {
 			logger.warn("未配置 magnetSelector");
-			return [];
+			return null;
 		}
 
-		const magnets = container.querySelectorAll(this.magnetSelector);
-		return Array.from(magnets).map((magnet) => {
-			const href = magnet.getAttribute("href");
-			this.onMagnetLinkFound(href, magnet);
+		if (!this.magnet.pageReg.test(location.pathname)) {
+			return null;
+		}
+		// logger.debug("magnet 配置: ", this.magnet);
+		const magnetElements = container.querySelectorAll(this.magnet.selector);
+		// logger.debug("query: ", magnetElements);
+		if (magnetElements.length === 0) {
+			return null;
+		}
 
-			return {
-				element: magnet,
-				text: magnet.textContent?.trim(),
-				href,
-			};
+		const magnets = [];
+		let lastFoundCode = null;
+		// let href, filesize;
+
+		// 处理每个磁力链接容器
+		Array.from(magnetElements).forEach((box) => {
+			const links = box.querySelectorAll("a");
+
+			let tmp = {};
+			let filesize = {};
+			Array.from(links).forEach((link) => {
+				const text = link.textContent.trim();
+				if (!text) return;
+				const href = link.getAttribute("href");
+				if (href) {
+					tmp.href = href;
+				}
+				const parsedCode = getCode(text);
+				if (parsedCode) {
+					lastFoundCode = parsedCode;
+					return;
+				}
+				filesize = this.extractFileSize(text);
+				if (filesize) {
+					tmp = { tmp, ...filesize };
+					return;
+				}
+			});
+			if (tmp.href) {
+				magnets.push({ ...tmp, boxElement: box });
+				// logger.debug(magnets);
+			}
 		});
+
+		return magnets.length > 0
+			? {
+					code: lastFoundCode,
+					magnets: magnets,
+			  }
+			: null;
+	}
+
+	// 新增辅助方法：提取文件大小信息
+	extractFileSize(text) {
+		const match = text.match(FILE_SIZE_REG_EXP);
+		if (!match) return null;
+
+		const numericValue = parseFloat(match[1]);
+		const unit = match[2].toUpperCase();
+		const sizeInBytes = convertToBytes(numericValue, unit);
+
+		return {
+			size: text, // 保留原始尺寸文本
+			sizeInBytes: sizeInBytes,
+		};
 	}
 
 	findMagnetLinksInBox(box) {

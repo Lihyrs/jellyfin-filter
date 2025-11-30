@@ -4,12 +4,11 @@ import { SITE_CONFIGS } from "../../comm/constant";
 
 class JavBusHelper extends BaseWebHelper {
 	constructor() {
-		const { boxSelector, codeSelector, magnetSelector, name } =
-			SITE_CONFIGS.JAVBUS;
+		const { boxSelector, codeSelector, magnet, name } = SITE_CONFIGS.JAVBUS;
 		super({
 			boxSelector,
 			codeSelector,
-			magnetSelector,
+			magnet,
 		});
 		this.siteName = name;
 	}
