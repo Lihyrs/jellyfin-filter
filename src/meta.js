@@ -1,6 +1,6 @@
 const meta = {
 	name: "Jellyfin filter",
-	version: "v1.0.7",
+	version: "v1.0.8",
 	namespace: "http://tampermonkey.net/",
 	description:
 		"标记所有番号，并添加跳转链接。支持jellyfin、115、手动输入的番号查重。",

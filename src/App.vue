@@ -13,9 +13,7 @@ import {
 	FILTER_AV_HOT_KEY,
 	RECOVER_HOT_KEY,
 	FETCH_AVS_HOT_KEY,
-	GET_COLLECTION_HOT_KEY,
 	GLOBAL_STORE_KEY,
-	FILE_SIZE,
 } from "./comm/constant";
 import { useGlobalStore } from "./store/global";
 
@@ -28,8 +26,6 @@ import KeysEvent from "./lib/KeysEvent";
 import { notificationManager as $notification } from "./lib/Notification";
 import isValidUrl from "./utils/isValidUrl";
 import { batchOpenTab } from "./utils/batchOpenTab";
-import { convertToBytes, convertToGB } from "./utils/convert";
-import { UNITS } from "./comm/constant";
 import logger from "./lib/Logger";
 // import logger from "./lib/Logger";
 // import logger from "loglevel";
@@ -45,6 +41,8 @@ const collectAVs = ref(new Set());
 const isCollectAVsHidden = ref(false);
 const keyEventHandler = new Set();
 const isFilterMagnetFile = ref(globalStore.settings.filterMagnetFiles);
+const hasMagnetLinks = ref(false);
+const hasAV = ref(false);
 
 let magnets = {};
 const filterMagnets = new Set();
@@ -134,11 +132,18 @@ onMounted(() => {
 	keyEventHandler.add(filterH);
 	keyEventHandler.add(recoverH);
 
-	setTimeout(() => {
-		if (isFilterMagnetFile.value) {
-			handleFilterMagnetFile(true);
-		}
-	}, 500);
+	if (filterHelper.isHasMagnetLink(url)) {
+		logger.debug("该页面有磁力");
+		hasMagnetLinks.value = true;
+		setTimeout(() => {
+			if (isFilterMagnetFile.value) {
+				logger.debug("开始查找磁力");
+				handleFilterMagnetFile(true);
+			}
+		}, 500);
+	} else {
+		hasAV.value = true;
+	}
 });
 
 onUnmounted(() => {
@@ -400,6 +405,12 @@ const handleSettingsSubmit = function (newSettings) {
 };
 const handleFilterMagnetFile = function (newValue) {
 	const webHelper = filterHelper.getCurrentPageHelper();
+	if (!filterHelper.isHasMagnetLink(window.location.href)) {
+		$notification.warn({
+			content: "该页面没有磁力链接",
+		});
+		return;
+	}
 	const magnetLinks = webHelper.findMagnetLinks();
 	if (!magnetLinks) {
 		$notification.warn({
@@ -440,6 +451,8 @@ const handleFilterMagnetFile = function (newValue) {
 		@batch-open-link="batchOpenLink"
 		@toggle-colle="handleToggleColle"
 		@filter-magnet-file="handleFilterMagnetFile"
+		:collection-hidden-disabled="hasAV"
+		:filter-magnet-file-disabled="hasMagnetLinks"
 		:filter-file-size="finalFiltrFileSize"
 		:is-collection-hidden="isCollectAVsHidden"
 		:is-filter-magnet-file="isFilterMagnetFile"></float-menu>

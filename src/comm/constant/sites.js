@@ -1,4 +1,4 @@
-// 常量定义
+import URLPatternMatcher from "../../lib/URLPatternMatcher";
 export const SITE_NAMES = {
 	JAVBUS: "javbus",
 	JAVLIBRARY: "javlibrary",
@@ -6,71 +6,90 @@ export const SITE_NAMES = {
 	JINJIER: "jinjier",
 	FC2: "fc2",
 };
-
-// 站点配置工厂函数
+// 修改站点配置工厂函数，支持路径前缀
 const createSiteConfig = (
 	name,
 	boxSelector,
 	codeSelector,
-	urlReg,
+	domainPatterns,
+	pathPatterns,
 	magnetBoxSelector = "",
-	magnetPageReg = ""
+	magnetPatterns = [],
+	options = {}
 ) => ({
 	name,
 	boxSelector,
 	codeSelector,
-	urlReg,
+	urlReg: new URLPatternMatcher(
+		domainPatterns,
+		pathPatterns,
+		magnetPatterns,
+		options
+	),
 	magnet: {
 		selector: magnetBoxSelector,
-		pageReg: magnetPageReg,
 	},
 });
 
-// 站点配置
+// 站点配置（更新后）
 export const SITE_CONFIGS = {
 	JAVBUS: createSiteConfig(
 		SITE_NAMES.JAVBUS,
 		"a.movie-box",
 		"date",
-		/^https:\/\/(www\.)?([a-zA-Z0-9-]*?(bus|jav|javbus)[a-zA-Z0-9-]*?)\.[a-zA-Z]{2,}(?=\/?$|\/page\/\d+|\/search|\/genre|\/uncensored|\/star|\/label|\/director|\/studio|\/series|\/[^\/]+)/i,
-		"#magnet-table tr",
-		/\/[a-zA-Z]{2,}-\d+$/i
+		["bus", "jav", "javbus"],
+		[
+			"",
+			"page",
+			"search",
+			"genre",
+			"uncensored",
+			"star",
+			"label",
+			"director",
+			"studio",
+			"series",
+		],
+		"#magnet-table tr"
 	),
 
 	JAVLIBRARY: createSiteConfig(
 		SITE_NAMES.JAVLIBRARY,
 		".video",
 		".id",
-		/^https:\/\/(www\.)?javdb\.com(?!\/v\/)/i
-		// magnetBoxSelector,
-		// magnetPageReg
+		["javdb"],
+		["v"],
+		"", // magnetBoxSelector
+		[], // magnetPatterns
+		{ pathPrefix: "cn" } // 新增路径前缀
 	),
 
 	JAVDB: createSiteConfig(
 		SITE_NAMES.JAVDB,
 		".movie-list .item",
 		".video-title strong",
-		/^https:\/\/www\.javlibrary\.com\/cn(?!(\/tl_bestreviews\.php|\/publicgroups\.php|\/publictopic\.php))/i
-		// magnetBoxSelector,
-		// magnetPageReg
+		["javlibrary"],
+		["tl_bestreviews.php", "publicgroups.php", "publictopic.php"],
+		"", // magnetBoxSelector
+		[], // magnetPatterns
+		{ pathPrefix: "cn" } // 新增路径前缀
 	),
 
-	JINJIER: {
-		name: SITE_NAMES.JINJIER,
-		boxSelector: "tbody tr",
-		codeSelector: (box) => {
+	JINJIER: createSiteConfig(
+		SITE_NAMES.JINJIER,
+		"tbody tr",
+		(box) => {
 			const td = box.querySelector("td:nth-of-type(3)");
 			return td?.textContent?.split(" ")[0] || "";
 		},
-		urlReg: /^https:\/\/jinjier\.art\/sql.*/i,
-		// magnetBoxSelector,
-		// magnetPageReg,
-	},
+		["jinjier"],
+		["sql"]
+	),
 
-	FC2: {
-		name: SITE_NAMES.FC2,
-		boxSelector: ".flex section .container .relative",
-		codeSelector: (box) => {
+	FC2: createSiteConfig(
+		SITE_NAMES.FC2,
+		".flex section .container .relative",
+		(box) => {
 			const span =
 				box.querySelector(".lazyload-wrapper + span") ||
 				box.querySelector("a.block + span");
@@ -82,11 +101,6 @@ export const SITE_CONFIGS = {
 			}
 			return code || "";
 		},
-		urlReg: /https:\/\/fc2ppvdb\.com/i,
-		// magnetBoxSelector,
-		// magnetPageReg,
-	},
+		["fc2ppvdb"]
+	),
 };
-
-// 导出各个站点的便捷访问
-export const { JAVBUS, JAVLIBRARY, JAVDB, JINJIER, FC2 } = SITE_CONFIGS;

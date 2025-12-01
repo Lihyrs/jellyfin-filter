@@ -37,6 +37,8 @@ class FilterHelper {
 			return null;
 		}
 
+		logger.debug("siteConfig: ", siteConfig);
+
 		const HelperClass = SITE_HELPERS.get(siteConfig.name);
 		if (!HelperClass) {
 			logger.warn(`未找到对应的助手类: ${siteConfig.name}`);
@@ -52,7 +54,7 @@ class FilterHelper {
 	 */
 	detectSiteConfig(url) {
 		for (const config of Object.values(SITE_CONFIGS)) {
-			if (config.urlReg.test(url)) {
+			if (config.urlReg.testHost(url)) {
 				return config;
 			}
 		}
@@ -87,22 +89,12 @@ class FilterHelper {
 	 * @returns {boolean} 是否支持
 	 */
 	isUrlSupported(url) {
-		if (!this.detectSiteConfig(url)) return false;
-		return this.extractCodeFromPath(url) !== null;
+		return this.detectSiteConfig(url) !== null;
 	}
-	extractCodeFromPath(url) {
-		const path = new URL(url).pathname;
-
-		// 检查所有番号模式
-		for (const [type, regex] of Object.entries(AV_CODE_REG_EXP)) {
-			if (Array.isArray(regex)) {
-				for (const subRegex of regex) {
-					const match = path.match(subRegex);
-					if (match) return { type, code: match[0] };
-				}
-			} else {
-				const match = path.match(regex);
-				if (match) return { type, code: match[0] };
+	isHasMagnetLink(url) {
+		for (const config of Object.values(SITE_CONFIGS)) {
+			if (config.urlReg.testProduct(url)) {
+				return config;
 			}
 		}
 		return null;

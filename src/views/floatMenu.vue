@@ -48,6 +48,10 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 	},
+	collectionHiddenDisabled: {
+		type: Boolean,
+		default: false,
+	},
 	isFilterMagnetFile: {
 		type: Boolean,
 		default: false,
@@ -55,6 +59,10 @@ const props = defineProps({
 	filterFileSize: {
 		type: [Number | String],
 		default: convertToGB(FILE_SIZE),
+	},
+	filterMagnetFileDisabled: {
+		type: Boolean,
+		default: true,
 	},
 });
 
@@ -101,6 +109,7 @@ const menuItemsConfig = [
 		icon: {
 			default: ICONS.batchOpenLink,
 		},
+		disabled: props.collectionHiddenDisable,
 	},
 	{
 		id: "toggle-collection",
@@ -113,6 +122,7 @@ const menuItemsConfig = [
 			active: ICONS.hideAVS,
 		},
 		stateKey: "isCollectionHidden",
+		disabled: props.collectionHiddenDisable,
 	},
 	{
 		id: "filter-filesize",
@@ -129,6 +139,7 @@ const menuItemsConfig = [
 			active: ICONS.filterFile,
 		},
 		stateKey: "isFilterMagnetFile",
+		disabled: props.filterMagnetFileDisable,
 	},
 	{
 		id: "settings",
@@ -137,6 +148,7 @@ const menuItemsConfig = [
 		icon: {
 			default: ICONS.settings,
 		},
+		disabled: false,
 	},
 ];
 

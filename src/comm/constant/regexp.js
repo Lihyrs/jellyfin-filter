@@ -17,3 +17,5 @@ export const LINK_REG_EXP = {
 };
 
 export const FILE_SIZE_REG_EXP = /^\s*(\d+(?:\.\d+)?)\s*([KMGTPE]?B)\s*$/i;
+
+export const COLLECT_AV_CODE_REG_EXP = /[a-zA-Z]/;

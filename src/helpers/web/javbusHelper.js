@@ -12,12 +12,6 @@ class JavBusHelper extends BaseWebHelper {
 		});
 		this.siteName = name;
 	}
-
-	onCodeFound(code, box, type) {
-		console.log(`在 ${this.siteName} 找到代码: ${code}`);
-		const magnets = this.findMagnetLinksInBox(box);
-		console.log(`找到 ${magnets.length} 个磁力链接`);
-	}
 }
 
 export default JavBusHelper;

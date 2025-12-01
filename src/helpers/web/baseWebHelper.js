@@ -258,9 +258,6 @@ class BaseWebHelper {
 			return null;
 		}
 
-		if (!this.magnet.pageReg.test(location.pathname)) {
-			return null;
-		}
 		// logger.debug("magnet 配置: ", this.magnet);
 		const magnetElements = container.querySelectorAll(this.magnet.selector);
 		// logger.debug("query: ", magnetElements);
