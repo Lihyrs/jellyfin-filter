@@ -3,7 +3,7 @@ const meta = {
 	version: "v1.0.8",
 	namespace: "http://tampermonkey.net/",
 	description:
-		"标记所有番号，并添加跳转链接。支持jellyfin、115、手动输入的番号查重。",
+		"在AV网站上标记已下载的番号；支持过滤磁力文件大小，可隐藏合集作品。",
 	author: "Lihyrs",
 	license: "MIT",
 	include: ["https://www.*bus*/*", "https://www.*jav*/*"],
